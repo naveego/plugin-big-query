@@ -12,12 +12,14 @@ namespace PluginBigQuery.API.Factory
 
         private readonly BigQueryClient _client;
         public readonly string _projectId;
+        public readonly string _defaultDatabase;
         public Client(Settings settings)
         {
             //Initialize client
             var credentials = GoogleCredential.FromFile(settings.JsonFilePath);
-            _client = BigQueryClient.Create(settings.ProjectID, credentials);
-            _projectId = settings.ProjectID;
+            _client = BigQueryClient.Create(settings.ProjectId, credentials);
+            _projectId = settings.ProjectId;
+            _defaultDatabase = settings.DefaultDatabase;
         }
 
         public async Task<BigQueryResults> ExecuteReaderAsync(string query)
@@ -30,6 +32,7 @@ namespace PluginBigQuery.API.Factory
             return await _client.ExecuteQueryAsync(query, parameters);
         }
 
+        
         public async Task<bool> PingAsync()
         {
             await _client.ExecuteQueryAsync("SELECT 1;", parameters: null);
@@ -39,6 +42,11 @@ namespace PluginBigQuery.API.Factory
         public string GetProjectId()
         {
             return _projectId;
+        }
+
+        public string GetDefaultDatabase()
+        {
+            return _defaultDatabase;
         }
     }
 }

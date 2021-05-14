@@ -9,29 +9,25 @@ namespace PluginBigQuery.API.Replication
         private static readonly string DeleteRecordQuery = @"DELETE FROM {0}.{1}
 WHERE {2} = '{3}'";
 
-        public static async Task DeleteRecordAsync(IConnectionFactory connFactory, ReplicationTable table,
+        public static async Task DeleteRecordAsync(IClientFactory clientFactory, ReplicationTable table,
             string primaryKeyValue)
         {
-            var conn = connFactory.GetConnection();
+            var client = clientFactory.GetClient();
+
+            var query = string.Format(DeleteRecordQuery,
+                Utility.Utility.GetSafeName(table.SchemaName, '`'),
+                Utility.Utility.GetSafeName(table.TableName, '`'),
+                Utility.Utility.GetSafeName(table.Columns.Find(c => c.PrimaryKey == true).ColumnName, '`'),
+                primaryKeyValue
+            );
             
             try
             {
-                await conn.OpenAsync();
-
-                var cmd = connFactory.GetCommand(string.Format(DeleteRecordQuery,
-                        Utility.Utility.GetSafeName(table.SchemaName, '`'),
-                        Utility.Utility.GetSafeName(table.TableName, '`'),
-                        Utility.Utility.GetSafeName(table.Columns.Find(c => c.PrimaryKey == true).ColumnName, '`'),
-                        primaryKeyValue
-                    ),
-                    conn);
-
-                // check if table exists
-                await cmd.ExecuteNonQueryAsync();
+                await client.ExecuteReaderAsync(query);
             }
             finally
             {
-                await conn.CloseAsync();
+                //noop
             }
         }
     }

@@ -11,15 +11,14 @@ namespace PluginBigQuery.API.Replication
 {
     public static partial class Replication
     {
-        public static async Task UpsertRecordAsync(IConnectionFactory connFactory,
+        public static async Task UpsertRecordAsync(IClientFactory clientFactory,
             ReplicationTable table,
             Dictionary<string, object> recordMap)
         {
-            var conn = connFactory.GetConnection();
+            var client = clientFactory.GetClient();
             
             try
             {
-                await conn.OpenAsync();
                 
                 // try to insert
                 var querySb =
@@ -43,9 +42,25 @@ namespace PluginBigQuery.API.Replication
                             rawValue = JsonConvert.SerializeObject(rawValue);
                         }
 
-                        querySb.Append(rawValue != null
-                            ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
-                            : $"NULL,");
+                        switch (column.DataType.ToLower())
+                        {
+                            case ("string"):
+                            case("datetime"):
+                            case("date"):
+                            case("time"):
+                            case("timestamp"):
+                                querySb.Append(rawValue != null
+                                     ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                                    : $"NULL,");
+                                break;
+                            default:
+                                querySb.Append(rawValue != null
+                                    ? $"{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")},"
+                                    : $"NULL,");
+                            break;
+                                
+                        }
+
                     }
                     else
                     {
@@ -60,9 +75,7 @@ namespace PluginBigQuery.API.Replication
 
                 Logger.Debug($"Insert record query: {query}");
 
-                var cmd = connFactory.GetCommand(query, conn);
-
-                await cmd.ExecuteNonQueryAsync();
+                await client.ExecuteReaderAsync(query);
             }
             catch (Exception e)
             {
@@ -114,9 +127,7 @@ namespace PluginBigQuery.API.Replication
 
                     var query = querySb.ToString();
 
-                    var cmd = connFactory.GetCommand(query, conn);
-
-                    await cmd.ExecuteNonQueryAsync();
+                    await client.ExecuteReaderAsync(query);
                 }
                 catch (Exception exception)
                 {
@@ -126,12 +137,12 @@ namespace PluginBigQuery.API.Replication
                 }
                 finally
                 {
-                    await conn.CloseAsync();
+                    // await conn.CloseAsync();
                 }
             }
             finally
             {
-                await conn.CloseAsync();
+                //await conn.CloseAsync();
             }
         }
     }

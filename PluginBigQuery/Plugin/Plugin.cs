@@ -237,7 +237,7 @@ namespace PluginBigQuery.Plugin
 
                 Logger.Info($"Refresh schemas attempted: {refreshSchemas.Count}");
 
-                var schemas = Discover.GetRefreshSchemas(_connectionFactory, refreshSchemas, sampleSize);
+                var schemas = Discover.GetRefreshSchemas(_clientFactory, refreshSchemas, sampleSize);
 
                 discoverSchemasResponse.Schemas.AddRange(await schemas.ToListAsync());
 
@@ -272,7 +272,7 @@ namespace PluginBigQuery.Plugin
             
                 Logger.SetLogPrefix(jobId);
             
-                var records = Read.ReadRecords(_connectionFactory, schema);
+                var records = Read.ReadRecords(_clientFactory, schema);
 
                 await foreach (var record in records)
                 {
@@ -306,7 +306,7 @@ namespace PluginBigQuery.Plugin
         {
             Logger.Info("Configuring write...");
 
-            var storedProcedures = await Write.GetAllStoredProceduresAsync(_connectionFactory);
+            var storedProcedures = await Write.GetAllStoredProceduresAsync(_clientFactory);
 
             var schemaJson = Write.GetSchemaJson(storedProcedures);
             var uiJson = Write.GetUIJson();
@@ -336,7 +336,7 @@ namespace PluginBigQuery.Plugin
                 var storedProcedure = storedProcedures.Find(s => s.GetId() == formData.StoredProcedure);
 
                 // base schema to return
-                var schema = await Write.GetSchemaForStoredProcedureAsync(_connectionFactory, storedProcedure);
+                var schema = await Write.GetSchemaForStoredProcedureAsync(_clientFactory, storedProcedure);
 
                 return new ConfigureWriteResponse
                 {
@@ -451,7 +451,7 @@ namespace PluginBigQuery.Plugin
                 Logger.Info($"Starting to reconcile Replication Job {request.DataVersions.JobId}");
                 try
                 {
-                    await Replication.ReconcileReplicationJobAsync(_connectionFactory, request);
+                    await Replication.ReconcileReplicationJobAsync(_clientFactory, request);
                 }
                 catch (Exception e)
                 {
@@ -481,7 +481,7 @@ namespace PluginBigQuery.Plugin
         {
             try
             {
-                Logger.Info("Writing records to MySQL...");
+                Logger.Info("Writing records to BQ...");
             
                 var schema = _server.WriteSettings.Schema;
                 var inCount = 0;
@@ -504,15 +504,15 @@ namespace PluginBigQuery.Plugin
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
-                        Task.Run(async () => await Replication.WriteRecord(_connectionFactory, schema, record, config, responseStream), context.CancellationToken);
+                        await Task.Run(async () => await Replication.WriteRecord(_clientFactory, schema, record, config, responseStream), context.CancellationToken);
                     }
                     else
                     {
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
-                        Task.Run(async () =>
-                                await Write.WriteRecordAsync(_connectionFactory, schema, record, responseStream),
+                        await Task.Run(async () =>
+                                await Write.WriteRecordAsync(_clientFactory, schema, record, responseStream),
                             context.CancellationToken);
                     }
                 }

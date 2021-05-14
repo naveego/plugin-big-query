@@ -21,31 +21,31 @@ namespace PluginBigQuery.API.Utility
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataJobId,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = true
             },
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataRequest,
                 PrimaryKey = false,
-                DataType = "longtext"
+                DataType = "string"
             },
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataReplicatedShapeId,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = false
             },
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataReplicatedShapeName,
-                DataType = "longtext",
+                DataType = "string",
                 PrimaryKey = false
             },
             new ReplicationColumn
             {
                 ColumnName = ReplicationMetaDataTimestamp,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = false
             }
         };

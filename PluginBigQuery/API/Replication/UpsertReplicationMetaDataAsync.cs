@@ -33,18 +33,17 @@ SET
 , {Constants.ReplicationMetaDataTimestamp} = '{{5}}'
 WHERE {Constants.ReplicationMetaDataJobId} = '{{6}}'";
 
-        public static async Task UpsertReplicationMetaDataAsync(IConnectionFactory connFactory, ReplicationTable table,
+        public static async Task UpsertReplicationMetaDataAsync(IClientFactory clientFactory, ReplicationTable table,
             ReplicationMetaData metaData)
         {
-            var conn = connFactory.GetConnection();
+
+            var client = clientFactory.GetClient();
 
             try
             {
-                await conn.OpenAsync();
-
-                // try to insert
-                var cmd = connFactory.GetCommand(
-                    string.Format(InsertMetaDataQuery,
+                if (!await RecordExistsAsync(clientFactory, table, metaData.Request.DataVersions.JobId))
+                {
+                    var query = string.Format(InsertMetaDataQuery,
                         Utility.Utility.GetSafeName(table.SchemaName, '`'),
                         Utility.Utility.GetSafeName(table.TableName, '`'),
                         metaData.Request.DataVersions.JobId,
@@ -52,29 +51,44 @@ WHERE {Constants.ReplicationMetaDataJobId} = '{{6}}'";
                         metaData.ReplicatedShapeId,
                         metaData.ReplicatedShapeName,
                         metaData.Timestamp
-                    ),
-                    conn);
-
-                await cmd.ExecuteNonQueryAsync();
+                    );
+                    
+                    await client.ExecuteReaderAsync(query);
+                }
+                else
+                {
+                    // update if found
+                    
+                    var query = string.Format(UpdateMetaDataQuery,
+                        Utility.Utility.GetSafeName(table.SchemaName, '`'),
+                        Utility.Utility.GetSafeName(table.TableName, '`'),
+                        metaData.Request.DataVersions.JobId,
+                        JsonConvert.SerializeObject(metaData.Request).Replace("\\", "\\\\"),
+                        metaData.ReplicatedShapeId,
+                        metaData.ReplicatedShapeName,
+                        metaData.Timestamp
+                    );
+                    
+                    await client.ExecuteReaderAsync(query);
+                }
             }
             catch (Exception e)
             {
                 try
                 {
                     // update if it failed
-                    var cmd = connFactory.GetCommand(
-                        string.Format(UpdateMetaDataQuery,
-                            Utility.Utility.GetSafeName(table.SchemaName, '`'),
-                            Utility.Utility.GetSafeName(table.TableName, '`'),
-                            JsonConvert.SerializeObject(metaData.Request).Replace("\\", "\\\\"),
-                            metaData.ReplicatedShapeId,
-                            metaData.ReplicatedShapeName,
-                            metaData.Timestamp,
-                            metaData.Request.DataVersions.JobId
-                        ),
-                        conn);
+                    var query = string.Format(UpdateMetaDataQuery,
+                        Utility.Utility.GetSafeName(table.SchemaName, '`'),
+                        Utility.Utility.GetSafeName(table.TableName, '`'),
+                        JsonConvert.SerializeObject(metaData.Request).Replace("\\", "\\\\"),
+                        metaData.ReplicatedShapeId,
+                        metaData.ReplicatedShapeName,
+                        metaData.Timestamp,
+                        metaData.Request.DataVersions.JobId
+                    );
 
-                    await cmd.ExecuteNonQueryAsync();
+                    await client.ExecuteReaderAsync(query);
+
                 }
                 catch (Exception exception)
                 {
@@ -84,12 +98,12 @@ WHERE {Constants.ReplicationMetaDataJobId} = '{{6}}'";
                 }
                 finally
                 {
-                    await conn.CloseAsync();
+                    //noop
                 }
             }
             finally
             {
-                await conn.CloseAsync();
+                //noop
             }
         }
     }

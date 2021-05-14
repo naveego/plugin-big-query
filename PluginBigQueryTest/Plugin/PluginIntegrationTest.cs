@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Naveego.Sdk.Plugins;
@@ -18,10 +19,14 @@ namespace PluginBigQueryTest.Plugin
         {
             return new Settings
             {
-                Hostname = "150.136.152.223",
-                Database = "classicmodels",
-                Username = "root",
-                Password = "dtC5&CFiQ$9j"
+                DefaultDatabase = "testdata",
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"C:\Users\chris.cowell\RiderProjects\Google Big Query - In House Sample\Queries\first-test-project-312212-3c3ca8a055a8.json"
+                
+                // Hostname = "150.136.152.223",
+                // Database = "classicmodels",
+                // Username = "root",
+                // Password = "dtC5&CFiQ$9j"
             };
         }
 
@@ -37,7 +42,7 @@ namespace PluginBigQueryTest.Plugin
             };
         }
 
-        private Schema GetTestSchema(string id = "test", string name = "test", string query = "")
+        private Schema GetTestSchema(string id = "`testdata`.`table1`", string name = "testdata.table1", string query = "")
         {
             return new Schema
             {
@@ -163,24 +168,23 @@ namespace PluginBigQueryTest.Plugin
 
             // assert
             Assert.IsType<DiscoverSchemasResponse>(response);
-            Assert.Equal(17, response.Schemas.Count);
-
-            
+            Assert.Equal(36, response.Schemas.Count);
             
             var schema = response.Schemas[0];
-            Assert.Equal($"`classicmodels`.`customers`", schema.Id);
-            Assert.Equal("classicmodels.customers", schema.Name);
+            Assert.Equal($"`testdata`.`NaveegoReplicationMetaData`", schema.Id);
+            Assert.Equal("testdata.NaveegoReplicationMetaData", schema.Name);
             Assert.Equal($"", schema.Query);
-            Assert.Equal(10, schema.Sample.Count);
-            Assert.Equal(13, schema.Properties.Count);
-
-            var property = schema.Properties[7];
-            Assert.Equal("`customerNumber`", property.Id);
-            Assert.Equal("customerNumber", property.Name);
+            Assert.Equal(6, schema.Sample.Count);
+            Assert.Equal(1, schema.Properties.Count);
+            
+            
+            var property = schema.Properties[0];
+            Assert.Equal("NaveegoJobId", property.Id);
+            Assert.Equal("NaveegoJobId", property.Name);
             Assert.Equal("", property.Description);
-            Assert.Equal(PropertyType.Integer, property.Type);
-            Assert.True(property.IsKey);
-            Assert.False(property.IsNullable);
+            Assert.Equal(PropertyType.String, property.Type);
+            Assert.False(property.IsKey);
+            Assert.True(property.IsNullable);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -209,7 +213,8 @@ namespace PluginBigQueryTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                ToRefresh = {GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers")}
+                // ToRefresh = {GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers")}
+                ToRefresh = {GetTestSchema("`testdata`.`table1`", "testdata.table1")}
             };
 
             // act
@@ -221,19 +226,20 @@ namespace PluginBigQueryTest.Plugin
             Assert.Single(response.Schemas);
 
             var schema = response.Schemas[0];
-            Assert.Equal($"`classicmodels`.`customers`", schema.Id);
-            Assert.Equal("classicmodels.customers", schema.Name);
+            Assert.Equal($"`testdata`.`table1`", schema.Id);
+            Assert.Equal("testdata.table1", schema.Name);
             Assert.Equal($"", schema.Query);
-            Assert.Equal(10, schema.Sample.Count);
-            Assert.Equal(13, schema.Properties.Count);
+            Assert.Equal(1, schema.Sample.Count);
+            Assert.Equal(6, schema.Properties.Count);
 
+            //Properties is null here also
             var property = schema.Properties[0];
-            Assert.Equal("`customerNumber`", property.Id);
-            Assert.Equal("customerNumber", property.Name);
+            Assert.Equal("COLUMN_NAME", property.Id);
+            Assert.Equal("COLUMN_NAME", property.Name);
             Assert.Equal("", property.Description);
             Assert.Equal(PropertyType.Integer, property.Type);
-            Assert.True(property.IsKey);
-            Assert.False(property.IsNullable);
+            Assert.False(property.IsKey);
+            Assert.True(property.IsNullable);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -262,7 +268,7 @@ namespace PluginBigQueryTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                ToRefresh = {GetTestSchema("test", "test", $"SELECT * FROM `classicmodels`.`customers`")}
+                ToRefresh = {GetTestSchema("`testdata`.`table1`", "testdata.table1", $"SELECT * FROM `testdata`.`table1`")}
             };
 
             // act
@@ -274,19 +280,22 @@ namespace PluginBigQueryTest.Plugin
             Assert.Single(response.Schemas);
 
             var schema = response.Schemas[0];
-            Assert.Equal($"test", schema.Id);
-            Assert.Equal("test", schema.Name);
-            Assert.Equal($"SELECT * FROM `classicmodels`.`customers`", schema.Query);
-            Assert.Equal(10, schema.Sample.Count);
-            Assert.Equal(13, schema.Properties.Count);
+            Assert.Equal($"`testdata`.`table1`", schema.Id);
+            Assert.Equal("testdata.table1", schema.Name);
+            Assert.Equal($"SELECT * FROM `testdata`.`table1`", schema.Query);
+            Assert.Equal(1, schema.Sample.Count);
+            
+            //Question - problem with properties being added
+            
+            Assert.Equal(1, schema.Properties.Count);
 
             var property = schema.Properties[0];
-            Assert.Equal("`customerNumber`", property.Id);
-            Assert.Equal("customerNumber", property.Name);
+            Assert.Equal("col6", property.Id);
+            Assert.Equal("col6", property.Name);
             Assert.Equal("", property.Description);
-            Assert.Equal(PropertyType.Integer, property.Type);
-            Assert.True(property.IsKey);
-            Assert.False(property.IsNullable);
+            Assert.Equal(PropertyType.Date, property.Type);
+            Assert.False(property.IsKey);
+            Assert.True(property.IsNullable);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -315,7 +324,8 @@ namespace PluginBigQueryTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                ToRefresh = {GetTestSchema("test", "test", $"bad syntax")}
+                //ToRefresh = {GetTestSchema("test", "test", $"bad syntax")}
+                ToRefresh = {GetTestSchema("testdata.table1", "testdata.table1", $"bad syntax")}
             };
 
             // act
@@ -329,7 +339,10 @@ namespace PluginBigQueryTest.Plugin
             {
                 // assert
                 Assert.IsType<RpcException>(e);
-                Assert.Contains("You have an error in your SQL syntax", e.Message);
+                Regex rgx = new Regex("Job.*contained errors", RegexOptions.Compiled);
+                bool passed = rgx.IsMatch(e.Message);
+                Assert.True(passed);
+                //Assert.Contains("Job* contained errors", e.Message);
             }
 
             // cleanup
@@ -354,7 +367,7 @@ namespace PluginBigQueryTest.Plugin
             var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
             var client = new Publisher.PublisherClient(channel);
 
-            var schema = GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers");
+            var schema = GetTestSchema("`testdata`.`table1`", "testdata.table1", "SELECT * FROM `testdata`.`table1`");
 
             var connectRequest = GetConnectSettings();
 
@@ -384,26 +397,28 @@ namespace PluginBigQueryTest.Plugin
 
             while (await responseStream.MoveNext())
             {
+                //Has response, but is null record
                 records.Add(responseStream.Current);
             }
 
             // assert
-            Assert.Equal(122, records.Count);
+            Assert.Equal(1, records.Count);
 
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
-            Assert.Equal((long) 103, record["`customerNumber`"]);
-            Assert.Equal("Atelier graphique", record["`customerName`"]);
-            Assert.Equal("Schmitt", record["`contactLastName`"]);
-            Assert.Equal("Carine", record["`contactFirstName`"]);
-            Assert.Equal("40.32.2555", record["`phone`"]);
-            Assert.Equal("54, rue Royale", record["`addressLine1`"]);
-            Assert.Equal("", record["`addressLine2`"]);
-            Assert.Equal("Nantes", record["`city`"]);
-            Assert.Equal("", record["`state`"]);
-            Assert.Equal("44000", record["`postalCode`"]);
-            Assert.Equal("France", record["`country`"]);
-            Assert.Equal((long) 1370, record["`salesRepEmployeeNumber`"]);
-            Assert.Equal("21000.00", record["`creditLimit`"]);
+            Assert.Equal(DateTime.Parse("2003-01-06"), record["col6"]);
+            // Assert.Equal((long) 103, record["`customerNumber`"]);
+            // Assert.Equal("Atelier graphique", record["`customerName`"]);
+            // Assert.Equal("Schmitt", record["`contactLastName`"]);
+            // Assert.Equal("Carine", record["`contactFirstName`"]);
+            // Assert.Equal("40.32.2555", record["`phone`"]);
+            // Assert.Equal("54, rue Royale", record["`addressLine1`"]);
+            // Assert.Equal("", record["`addressLine2`"]);
+            // Assert.Equal("Nantes", record["`city`"]);
+            // Assert.Equal("", record["`state`"]);
+            // Assert.Equal("44000", record["`postalCode`"]);
+            // Assert.Equal("France", record["`country`"]);
+            // Assert.Equal((long) 1370, record["`salesRepEmployeeNumber`"]);
+            // Assert.Equal("21000.00", record["`creditLimit`"]);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -426,7 +441,7 @@ namespace PluginBigQueryTest.Plugin
             var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
             var client = new Publisher.PublisherClient(channel);
 
-            var schema = GetTestSchema("test", "test", $"SELECT * FROM `classicmodels`.`orders`");
+            var schema = GetTestSchema("`testdata`,`table1`", "testdata.table1", $"SELECT * FROM `testdata`.`table1`");
 
             var connectRequest = GetConnectSettings();
 
@@ -458,18 +473,22 @@ namespace PluginBigQueryTest.Plugin
             {
                 records.Add(responseStream.Current);
             }
-
+            
+            
             // assert
-            Assert.Equal(326, records.Count);
+            Assert.Equal(1, records.Count);
 
+            //This is fixed, but is it right?
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
-            Assert.Equal((long) 10100, record["`orderNumber`"]);
-            Assert.Equal(DateTime.Parse("2003-01-06"), record["`orderDate`"]);
-            Assert.Equal(DateTime.Parse("2003-01-13"), record["`requiredDate`"]);
-            Assert.Equal(DateTime.Parse("2003-01-10"), record["`shippedDate`"]);
-            Assert.Equal("Shipped", record["`status`"]);
-            Assert.Equal("", record["`comments`"]);
-            Assert.Equal((long) 363, record["`customerNumber`"]);
+            Assert.Equal(DateTime.Parse("2003-01-06T00:00:00"), record["col6"]);
+            // Assert.Equal((long) 64, record["col1"]);
+            // Assert.Equal(DateTime.Parse("2003-01-06"), record["col2"]);
+            // Assert.Equal(DateTime.Parse("2003-01-13"), record["col3"]);
+            // Assert.Equal(DateTime.Parse("2003-01-10"), record["col4"]);
+            // Assert.Equal("Shipped", record["col5`"]);
+            // Assert.Equal(DateTime.Parse("1/6/2003 12:00:00 AM"), record["col6"]);
+            // Assert.Equal("", record["`comments`"]);
+            // Assert.Equal((long) 363, record["`customerNumber`"]);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -492,7 +511,8 @@ namespace PluginBigQueryTest.Plugin
             var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
             var client = new Publisher.PublisherClient(channel);
 
-            var schema = GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers");
+            var schema = GetTestSchema("`testdata`.`table1`", "testdata.table1");
+            // var schema = GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers");
 
             var connectRequest = GetConnectSettings();
 
@@ -527,7 +547,7 @@ namespace PluginBigQueryTest.Plugin
             }
 
             // assert
-            Assert.Equal(10, records.Count);
+            Assert.Equal(1, records.Count);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -554,23 +574,26 @@ namespace PluginBigQueryTest.Plugin
 
             var request = new PrepareWriteRequest()
             {
-                Schema = GetTestSchema(),
+                Schema = GetTestSchema(), 
                 CommitSlaSeconds = 1,
                 Replication = new ReplicationWriteRequest
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        SchemaName = "test",
+                        //SchemaName = "test",
+                        SchemaName = "testdata",
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })
                 },
+                //Version pairs to test
+                //1,2 1,2 2,2 2,3
                 DataVersions = new DataVersions
                 {
                     JobId = "jobUnitTest",
                     ShapeId = "shapeUnitTest",
-                    JobDataVersion = 1,
-                    ShapeDataVersion = 2
+                    JobDataVersion = 2,
+                    ShapeDataVersion = 3
                 }
             };
 
@@ -612,7 +635,8 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        SchemaName = "test",
+                        // SchemaName = "test",
+                        SchemaName = "testdata",
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })
@@ -633,6 +657,7 @@ namespace PluginBigQueryTest.Plugin
                     {
                         Action = Record.Types.Action.Upsert,
                         CorrelationId = "test",
+                        // CorrelationId = "testdata",
                         RecordId = "record1",
                         DataJson = "{\"Id\":1,\"Name\":\"Test Company\"}",
                         Versions =
@@ -707,7 +732,7 @@ namespace PluginBigQueryTest.Plugin
                 {
                     DataJson = JsonConvert.SerializeObject(new ConfigureWriteFormData
                     {
-                        StoredProcedure = "`test`.`UpsertIntoTestTable`"
+                        StoredProcedure = "`testdata`.`UpsertIntoTestTable`"
                     })
                 }
             };

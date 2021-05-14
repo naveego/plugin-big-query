@@ -12,13 +12,13 @@ namespace PluginBigQuery.API.Replication
             versionTable.Columns.Add(new ReplicationColumn
             {
                 ColumnName = Constants.ReplicationVersionRecordId,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = true
             });
             versionTable.Columns.Add(new ReplicationColumn
             {
                 ColumnName = Constants.ReplicationRecordId,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = false
             });
 

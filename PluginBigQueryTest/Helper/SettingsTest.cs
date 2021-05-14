@@ -12,11 +12,9 @@ namespace PluginBigQueryTest.Helper
             // setup
             var settings = new Settings
             {
-                Hostname = "123.456.789.0",
-                Port = "3306",
-                Database = "testdb",
-                Username = "username",
-                Password = "password"
+                DefaultDatabase = "testdata",
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"../PluginBigQueryTest/Helper/SettingsTest.cs"
             };
 
             // act
@@ -26,101 +24,74 @@ namespace PluginBigQueryTest.Helper
         }
 
         [Fact]
-        public void ValidateNoHostNameTest()
+        public void ValidateNoDefaultDatabaseTest()
         {
             // setup
             var settings = new Settings
             {
-                Hostname = null,
-                Database = "testdb",
-                Username = "username",
-                Password = "password"
+                DefaultDatabase = null,
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"C:\"
             };
 
             // act
             Exception e = Assert.Throws<Exception>(() => settings.Validate());
 
             // assert
-            Assert.Contains("The Hostname property must be set", e.Message);
+            Assert.Contains("The default database property must be set", e.Message);
         }
         
         [Fact]
-        public void ValidateNoDatabaseTest()
+        public void ValidateNoProjectIdTest()
         {
             // setup
             var settings = new Settings
             {
-                Hostname = "123.456.789.0",
-                Database = null,
-                Username = "username",
-                Password = "password"
+                DefaultDatabase = "testdata",
+                ProjectId = null,
+                JsonFilePath = @"C:\"
             };
 
             // act
             Exception e = Assert.Throws<Exception>(() => settings.Validate());
 
             // assert
-            Assert.Contains("The Database property must be set", e.Message);
+            Assert.Contains("The Project ID property must be set", e.Message);
         }
         
         [Fact]
-        public void ValidateNoUsernameTest()
+        public void ValidateNoJsonFilePathTest()
         {
             // setup
             var settings = new Settings
             {
-                Hostname = "123.456.789.0",
-                Database = "testdb",
-                Username = null,
-                Password = "password"
+                DefaultDatabase = "testdata",
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = null
             };
 
             // act
             Exception e = Assert.Throws<Exception>(() => settings.Validate());
 
             // assert
-            Assert.Contains("The Username property must be set", e.Message);
+            Assert.Contains("The JsonFilePath property must be set", e.Message);
         }
-        
         [Fact]
-        public void ValidateNoPasswordTest()
+        public void ValidateNoJsonFileTest()
         {
             // setup
             var settings = new Settings
             {
-                Hostname = "123.456.789.0",
-                Database = "testdb",
-                Username = "username",
-                Password = null
+                DefaultDatabase = "testdata",
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"C:\"
             };
 
             // act
             Exception e = Assert.Throws<Exception>(() => settings.Validate());
 
             // assert
-            Assert.Contains("The Password property must be set", e.Message);
-        }
-        
-        [Fact]
-        public void GetConnectionStringTest()
-        {
-            // setup
-            var settings = new Settings
-            {
-                Hostname = "123.456.789.0",
-                Port = "3306",
-                Database = "testdb",
-                Username = "username",
-                Password = "password"
-            };
-
-            // act
-            var connString = settings.GetConnectionString();
-            var connDbString = settings.GetConnectionString("otherdb");
-
-            // assert
-            Assert.Equal("Server=123.456.789.0; Port=3306; Database=testdb; User=username; Password=password;", connString);
-            Assert.Equal("Server=123.456.789.0; Port=3306; Database=otherdb; User=username; Password=password;", connDbString);
+            Assert.Contains("No JSON file found at given path", e.Message);
         }
     }
 }

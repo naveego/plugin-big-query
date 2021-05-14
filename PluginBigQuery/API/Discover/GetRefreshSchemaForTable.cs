@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Naveego.Sdk.Plugins;
@@ -13,65 +14,70 @@ SELECT t.TABLE_NAME
      , t.TABLE_TYPE
      , c.COLUMN_NAME
      , c.DATA_TYPE
-     , c.COLUMN_KEY
+     , 0 as COLUMN_KEY
      , c.IS_NULLABLE
-     , c.CHARACTER_MAXIMUM_LENGTH
+     , 0 as CHARACTER_MAXIMUM_LENGTH
 
-FROM INFORMATION_SCHEMA.TABLES AS t
-      INNER JOIN INFORMATION_SCHEMA.COLUMNS AS c ON c.TABLE_SCHEMA = t.TABLE_SCHEMA AND c.TABLE_NAME = t.TABLE_NAME
+FROM {0}.INFORMATION_SCHEMA.TABLES AS t
+      INNER JOIN {0}.INFORMATION_SCHEMA.COLUMNS AS c ON c.TABLE_SCHEMA = t.TABLE_SCHEMA AND c.TABLE_NAME = t.TABLE_NAME
 
-WHERE t.TABLE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys')
-AND t.TABLE_SCHEMA = '{0}'
 AND t.TABLE_NAME = '{1}' 
+AND t.TABLE_SCHEMA = '{2}'
 
 ORDER BY t.TABLE_NAME";
+        
 
-        public static async Task<Schema> GetRefreshSchemaForTable(IConnectionFactory connFactory, Schema schema,
+        public static async Task<Schema> GetRefreshSchemaForTable(IClientFactory clientFactory, Schema schema,
             int sampleSize = 5)
         {
+            
             var decomposed = DecomposeSafeName(schema.Id).TrimEscape();
-            var conn = string.IsNullOrWhiteSpace(decomposed.Database)
-                ? connFactory.GetConnection()
-                : connFactory.GetConnection(decomposed.Database);
+            var client = clientFactory.GetClient();
+            string db = client.GetDefaultDatabase();
 
-            try
-            {
-                await conn.OpenAsync();
+            string query = String.Format(GetTableAndColumnsQuery, db, decomposed.Table, decomposed.Schema);
+            
+            var results = await client.ExecuteReaderAsync(query);
 
-                var cmd = connFactory.GetCommand(
-                    string.Format(GetTableAndColumnsQuery, decomposed.Schema, decomposed.Table), conn);
-                var reader = await cmd.ExecuteReaderAsync();
-                var refreshProperties = new List<Property>();
-
-                while (await reader.ReadAsync())
-                {
-                    // add column to refreshProperties
-                    var property = new Property
-                    {
-                        Id = Utility.Utility.GetSafeName(reader.GetValueById(ColumnName).ToString(), '`'),
-                        Name = reader.GetValueById(ColumnName).ToString(),
-                        IsKey = reader.GetValueById(ColumnKey).ToString() == "PRI",
-                        IsNullable = reader.GetValueById(IsNullable).ToString() == "YES",
-                        Type = GetType(reader.GetValueById(DataType).ToString()),
-                        TypeAtSource = GetTypeAtSource(reader.GetValueById(DataType).ToString(),
-                            reader.GetValueById(CharacterMaxLength))
-                    };
-                    refreshProperties.Add(property);
-                }
-
-                // add properties
-                schema.Properties.Clear();
-                schema.Properties.AddRange(refreshProperties);
+            var refreshProperties = new List<Property>();
 
             
-
-                // get sample and count
-                return await AddSampleAndCount(connFactory, schema, sampleSize);
-            }
-            finally
+            
+            foreach (var row in results)
             {
-                await conn.CloseAsync();
+                //for field in row: do this - switch case is perfect
+                var property = new Property(){};
+                
+                
+                foreach (var field in row.Schema.Fields)
+                {
+                    
+                    switch (field.Name)
+                    {
+                        case "COLUMN_NAME":
+                            property.Name = field.Name;
+                            property.Id = field.Name;
+                            break;
+                        case "DATA_TYPE":
+                            property.Type = GetType(row[field.Name].ToString());
+                            property.TypeAtSource = row[field.Name].ToString(); //Max length does not exist, so just use dataType
+                            break;
+                        case "COLUMN_KEY":
+                            property.IsKey = false;
+                            break;
+                        case "IS_NULLABLE":
+                            property.IsNullable = true;
+                            break;
+                    }
+                }
+                refreshProperties.Add(property);
             }
+            
+            schema.Properties.Clear();
+            schema.Properties.AddRange(refreshProperties);
+
+            return await AddSampleAndCount(clientFactory, schema, sampleSize);
+            
         }
 
         private static DecomposeResponse DecomposeSafeName(string schemaId)

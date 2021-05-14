@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using MySqlConnector.Logging;
 using PluginBigQuery.API.Factory;
 using PluginBigQuery.DataContracts;
 
@@ -8,25 +10,21 @@ namespace PluginBigQuery.API.Replication
     {
         private static readonly string DropTableQuery = @"DROP TABLE IF EXISTS {0}.{1}";
 
-        public static async Task DropTableAsync(IConnectionFactory connFactory, ReplicationTable table)
+        public static async Task DropTableAsync(IClientFactory clientFactory, ReplicationTable table)
         {
-            var conn = connFactory.GetConnection();
+            var client = clientFactory.GetClient();
 
             try
             {
-                await conn.OpenAsync();
-
-                var cmd = connFactory.GetCommand(
-                    string.Format(DropTableQuery,
-                        Utility.Utility.GetSafeName(table.SchemaName, '`'),
-                        Utility.Utility.GetSafeName(table.TableName, '`')
-                    ),
-                    conn);
-                await cmd.ExecuteNonQueryAsync();
+                string query = string.Format(DropTableQuery,
+                    Utility.Utility.GetSafeName(table.SchemaName, '`'),
+                    Utility.Utility.GetSafeName(table.TableName, '`')
+                );
+                client.ExecuteReaderAsync(query);
             }
             finally
             {
-                await conn.CloseAsync();
+                //noop
             }
         }
     }

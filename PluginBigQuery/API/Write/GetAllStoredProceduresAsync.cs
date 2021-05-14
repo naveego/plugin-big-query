@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PluginBigQuery.API.Factory;
@@ -13,39 +14,38 @@ namespace PluginBigQuery.API.Write
 
         private static string GetAllStoredProceduresQuery = @"
 SELECT ROUTINE_SCHEMA, ROUTINE_NAME, SPECIFIC_NAME
-FROM INFORMATION_SCHEMA.ROUTINES
+FROM {0}.INFORMATION_SCHEMA.ROUTINES
 WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_SCHEMA != 'sys'";
 
-        public static async Task<List<WriteStoredProcedure>> GetAllStoredProceduresAsync(IConnectionFactory connFactory)
+        public static async Task<List<WriteStoredProcedure>> GetAllStoredProceduresAsync(IClientFactory clientFactory)
         {
             var storedProcedures = new List<WriteStoredProcedure>();
-            var conn = connFactory.GetConnection();
+            var client = clientFactory.GetClient();
 
             try
             {
-                await conn.OpenAsync();
+                var results = await client.ExecuteReaderAsync(String.Format(GetAllStoredProceduresQuery, 
+                                                                                    client.GetDefaultDatabase()));
 
-                var cmd = connFactory.GetCommand(GetAllStoredProceduresQuery, conn);
-                var reader = await cmd.ExecuteReaderAsync();
 
-                while (await reader.ReadAsync())
+                foreach (var row in results)
                 {
-                    var storedProcedure = new WriteStoredProcedure
+                    var storedProcedure = new WriteStoredProcedure()
                     {
-                        SchemaName = reader.GetValueById(SchemaName).ToString(),
-                        RoutineName = reader.GetValueById(RoutineName).ToString(),
-                        SpecificName = reader.GetValueById(SpecificName).ToString()
+                        SchemaName = row[SchemaName].ToString(),
+                        RoutineName = row[RoutineName].ToString(),
+                        SpecificName = row[SpecificName].ToString()
                     };
 
                     storedProcedures.Add(storedProcedure);
                 }
-
-                return storedProcedures;
             }
-            finally
+            catch
             {
-                await conn.CloseAsync();
+                
             }
+
+            return storedProcedures;
         }
     }
 }

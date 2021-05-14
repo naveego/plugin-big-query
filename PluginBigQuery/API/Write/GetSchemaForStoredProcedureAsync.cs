@@ -12,12 +12,12 @@ namespace PluginBigQuery.API.Write
 
         private static string GetStoredProcedureParamsQuery = @"
 SELECT PARAMETER_NAME, DATA_TYPE, ORDINAL_POSITION
-FROM INFORMATION_SCHEMA.PARAMETERS
-WHERE SPECIFIC_SCHEMA = '{0}'
-AND SPECIFIC_NAME = '{1}'
+FROM {0}.INFORMATION_SCHEMA.PARAMETERS
+WHERE SPECIFIC_SCHEMA = '{1}'
+AND SPECIFIC_NAME = '{2}'
 ORDER BY ORDINAL_POSITION ASC";
 
-        public static async Task<Schema> GetSchemaForStoredProcedureAsync(IConnectionFactory connFactory,
+        public static async Task<Schema> GetSchemaForStoredProcedureAsync(IClientFactory clientFactory,
             WriteStoredProcedure storedProcedure)
         {
             var schema = new Schema
@@ -29,29 +29,25 @@ ORDER BY ORDINAL_POSITION ASC";
                 Query = storedProcedure.GetId()
             };
 
-            var conn = connFactory.GetConnection();
-            await conn.OpenAsync();
+            var client = clientFactory.GetClient();
 
-            var cmd = connFactory.GetCommand(
-                string.Format(GetStoredProcedureParamsQuery, storedProcedure.SchemaName, storedProcedure.SpecificName),
-                conn);
-            var reader = await cmd.ExecuteReaderAsync();
+            var query = string.Format(GetStoredProcedureParamsQuery, "testdata", storedProcedure.SchemaName,
+                storedProcedure.SpecificName);
+            var results = await client.ExecuteReaderAsync(query);
 
-            while (await reader.ReadAsync())
+            foreach (var row in results)
             {
-                var property = new Property
+                var property = new Property()
                 {
-                    Id = reader.GetValueById(ParamName).ToString(),
-                    Name = reader.GetValueById(ParamName).ToString(),
+                    Id = row[ParamName].ToString(),
+                    Name = row[ParamName].ToString(),
                     Description = "",
-                    Type = Discover.Discover.GetType(reader.GetValueById(DataType).ToString()),
-                    TypeAtSource = reader.GetValueById(DataType).ToString()
+                    Type = Discover.Discover.GetType(row[DataType].ToString()),
+                    TypeAtSource = row[DataType].ToString()
                 };
-
+                
                 schema.Properties.Add(property);
             }
-
-            await conn.CloseAsync();
 
             return schema;
         }

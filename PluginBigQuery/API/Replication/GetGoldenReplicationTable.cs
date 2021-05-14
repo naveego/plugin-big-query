@@ -12,13 +12,13 @@ namespace PluginBigQuery.API.Replication
             goldenTable.Columns.Add(new ReplicationColumn
             {
                 ColumnName = Constants.ReplicationRecordId,
-                DataType = "varchar(255)",
+                DataType = "string",
                 PrimaryKey = true
             });
             goldenTable.Columns.Add(new ReplicationColumn
             {
                 ColumnName = Constants.ReplicationVersionIds,
-                DataType = "longtext",
+                DataType = "string",
                 PrimaryKey = false,
                 Serialize = true
             });

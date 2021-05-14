@@ -36,125 +36,62 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
       ORDER BY t.TABLE_NAME;";
 
         
-        //public static async IAsyncEnumerable<Schema> GetAllSchemas(IClientFactory connFactory, int sampleSize = 5)
+        
         public static async IAsyncEnumerable<Schema> GetAllSchemas(IClientFactory clientFactory, int sampleSize = 5)
         {
-            //Just data tables, no system schemas
-            //var conn = connFactory.GetConnection();
-
             var client = clientFactory.GetClient();
-
-            string projectId = client.GetProjectId();
-            string query = String.Format(GetTableAndColumnsQuery, "testdata");
-
-            var result = await client.ExecuteReaderAsync(GetAllTablesAndColumnsQuery);
-
-            Schema bq_schema = null;
-            var bq_currentSchemaId = "";
             
+            string db = client.GetDefaultDatabase();
+            string query = String.Format(GetAllTablesAndColumnsQuery, db);
+
+            var result = await client.ExecuteReaderAsync(query);
+
+            Schema schema = null;
+            var currentSchemaId = "";
             foreach (var row in result)
             {
-                var bq_schemaId = result.TableReference.TableId;
-                    //$"{Utility.Utility.GetSafeName(reader.GetValueById(TableSchema).ToString(), '`')}.{Utility.Utility.GetSafeName(reader.GetValueById(TableName).ToString(), '`')}";
-                if (bq_schemaId != bq_currentSchemaId)
+                var schemaId = 
+                    $"{Utility.Utility.GetSafeName(row[TableSchema].ToString(), '`')}.{Utility.Utility.GetSafeName(row[TableName].ToString(), '`')}";
+                if (schemaId != currentSchemaId)
                 {
                     // return previous schema
-                    if (bq_schema != null)
+                    if (schema != null)
                     {
                         // get sample and count
-                        yield return await AddSampleAndCount(clientFactory, bq_schema, sampleSize);
+                        yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                     }
 
                     // start new schema
-                    bq_currentSchemaId = bq_schemaId;
-                    var parts = DecomposeSafeName(bq_currentSchemaId).TrimEscape();
-                    bq_schema = new Schema
+                    currentSchemaId = schemaId;
+                    var parts = DecomposeSafeName(currentSchemaId).TrimEscape();
+                    schema = new Schema
                     {
-                        Id = bq_currentSchemaId,
+                        Id = currentSchemaId,
                         Name = $"{parts.Schema}.{parts.Table}",
                         Properties = { },
                         DataFlowDirection = Schema.Types.DataFlowDirection.Read
                     };
-                }
-            }
-            
-            
-            #region MySQL Method
-            try
-            {
-                
-                
-                await conn.OpenAsync();
-
-                var cmd = connFactory.GetCommand(GetAllTablesAndColumnsQuery, conn);
-                var reader = await cmd.ExecuteReaderAsync();
-
-                Schema schema = null;
-                var currentSchemaId = "";
-                while (await reader.ReadAsync())
-                {
-                    var schemaId =
-                        $"{Utility.Utility.GetSafeName(reader.GetValueById(TableSchema).ToString(), '`')}.{Utility.Utility.GetSafeName(reader.GetValueById(TableName).ToString(), '`')}";
-                    if (schemaId != currentSchemaId)
-                    {
-                        // return previous schema
-                        if (schema != null)
-                        {
-                            // get sample and count
-                            yield return await AddSampleAndCount(connFactory, schema, sampleSize);
-                        }
-
-                        // start new schema
-                        currentSchemaId = schemaId;
-                        var parts = DecomposeSafeName(currentSchemaId).TrimEscape();
-                        schema = new Schema
-                        {
-                            Id = currentSchemaId,
-                            Name = $"{parts.Schema}.{parts.Table}",
-                            Properties = { },
-                            DataFlowDirection = Schema.Types.DataFlowDirection.Read
-                        };
-                    }
-
-                    // add column to schema
+                    
                     var property = new Property
                     {
-                        Id = $"`{reader.GetValueById(ColumnName)}`",
-                        Name = reader.GetValueById(ColumnName).ToString(),
-                        IsKey = reader.GetValueById(ColumnKey).ToString() == "PRI",
-                        IsNullable = reader.GetValueById(IsNullable).ToString() == "YES",
-                        Type = GetType(reader.GetValueById(DataType).ToString()),
-                        TypeAtSource = GetTypeAtSource(reader.GetValueById(DataType).ToString(),
-                            reader.GetValueById(CharacterMaxLength))
+                        Id = row[ColumnName].ToString(),
+                        Name = row[ColumnName].ToString(),
+                        IsKey = row[ColumnKey].ToString() == "1",
+                        IsNullable = row[IsNullable].ToString() == "YES",
+                        Type = GetType(row[DataType].ToString()),
+                         TypeAtSource = GetTypeAtSource(row[DataType].ToString(), 0)
                     };
                     
                     schema?.Properties.Add(property);
                 }
-
                 if (schema != null)
                 {
                     // get sample and count
-                    yield return await AddSampleAndCount(connFactory, schema, sampleSize);
+                    yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                 }
             }
-            finally
-            {
-                await conn.CloseAsync();
-            }
-            #endregion
         }
 
-        private static async Task<Schema> AddSampleAndCount(IConnectionFactory connFactory, Schema schema,
-            int sampleSize)
-        {
-            // add sample and count
-            var records = Read.Read.ReadRecords(connFactory, schema).Take(sampleSize);
-            schema.Sample.AddRange(await records.ToListAsync());
-            schema.Count = await GetCountOfRecords(connFactory, schema);
-
-            return schema;
-        }
-        
         private static async Task<Schema> AddSampleAndCount(IClientFactory clientFactory, Schema schema,
             int sampleSize)
         {
@@ -162,17 +99,13 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
             var records = Read.Read.ReadRecords(clientFactory, schema).Take(sampleSize);
             schema.Sample.AddRange(await records.ToListAsync());
             schema.Count = await GetCountOfRecords(clientFactory, schema);
-            
-            
-            //schema.Sample = Store sample records.
-            //schema.Count = total count of records
 
             return schema;
         }
 
         public static PropertyType GetType(string dataType)
         {
-            switch (dataType)
+            switch (dataType.ToLower())
             {
                 case "datetime":
                 case "timestamp":
@@ -186,14 +119,19 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
                 case "mediumint":
                 case "int":
                 case "bigint":
+                case "int64":
                     return PropertyType.Integer;
                 case "numeric":
+                case "bignumeric":
                 case "decimal":
+                case "bigdecimal":
                     return PropertyType.Decimal;
                 case "float":
+                case "float64":
                 case "double":
                     return PropertyType.Float;
                 case "boolean":
+                case "bool":
                     return PropertyType.Bool;
                 case "blob":
                 case "mediumblob":
@@ -202,6 +140,7 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
                 case "char":
                 case "varchar":
                 case "tinytext":
+                case "bytes":
                     return PropertyType.String;
                 case "text":
                 case "mediumtext":

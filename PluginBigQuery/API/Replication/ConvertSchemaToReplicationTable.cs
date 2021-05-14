@@ -36,27 +36,27 @@ namespace PluginBigQuery.API.Replication
             switch (dataType)
             {
                 case PropertyType.Datetime:
-                    return "varchar(255)";
+                    return "string";
                 case PropertyType.Date:
-                    return "varchar(255)";
+                    return "string";
                 case PropertyType.Time:
-                    return "varchar(255)";
+                    return "string";
                 case PropertyType.Integer:
-                    return "int";
+                    return "int64";
                 case PropertyType.Decimal:
-                    return "decimal";
+                    return "float64";
                 case PropertyType.Float:
-                    return "double";
+                    return "float64";
                 case PropertyType.Bool:
-                    return "boolean";
+                    return "bool";
                 case PropertyType.Blob:
-                    return "longblob";
+                    return "blob";
                 case PropertyType.String:
-                    return "varchar(255)";
+                    return "string";
                 case PropertyType.Text:
-                    return "longtext";
+                    return "string";
                 default:
-                    return "longtext";
+                    return "string";
             }
         }
     }

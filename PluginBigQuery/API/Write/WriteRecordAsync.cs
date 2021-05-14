@@ -16,15 +16,15 @@ namespace PluginBigQuery.API.Write
     {
         private static readonly SemaphoreSlim WriteSemaphoreSlim = new SemaphoreSlim(1, 1);
 
-        public static async Task<string> WriteRecordAsync(IConnectionFactory connFactory, Schema schema, Record record,
+        public static async Task<string> WriteRecordAsync(IClientFactory clientFactory, Schema schema, Record record,
             IServerStreamWriter<RecordAck> responseStream)
         {
             // debug
             Logger.Debug($"Starting timer for {record.RecordId}");
             var timer = Stopwatch.StartNew();
             
-            var conn = connFactory.GetConnection();
-
+            //var conn = connFactory.GetConnection();
+            var client = clientFactory.GetClient();
             try
             {
                 var recordMap = JsonConvert.DeserializeObject<Dictionary<string, object>>(record.DataJson);
@@ -63,15 +63,9 @@ namespace PluginBigQuery.API.Write
                 var query = querySb.ToString();
                 
                 Logger.Debug($"WB querySb: {query}");
+
+                await client.ExecuteReaderAsync(query);
                 
-                await conn.OpenAsync();
-
-                var cmd = connFactory.GetCommand(query, conn);
-
-                await cmd.ExecuteNonQueryAsync();
-
-                await conn.CloseAsync();
-
                 var ack = new RecordAck
                 {
                     CorrelationId = record.CorrelationId,
@@ -86,8 +80,6 @@ namespace PluginBigQuery.API.Write
             }
             catch (Exception e)
             {
-                await conn.CloseAsync();
-                
                 Logger.Error(e, $"Error writing record {e.Message}");
                 // send ack
                 var ack = new RecordAck

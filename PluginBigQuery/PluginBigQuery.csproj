@@ -25,6 +25,9 @@
         <Icon Include="$(MSBuildProjectDirectory)/../icon.png" />
         <License Include="$(MSBuildProjectDirectory)/../LICENSE" />
         <Manifest Include="$(MSBuildProjectDirectory)/../manifest.json" />
+        <Manifest Include="..\manifest - original.json">
+          <Link>plugin-big-query\manifest - original.json</Link>
+        </Manifest>
     </ItemGroup>
 
     <Target Name="ZipWindows" AfterTargets="Publish" Condition="$(Configuration) == 'Release' And Exists('$(MSBuildProjectDirectory)\bin\Release\netcoreapp3.1\win-x64\publish')">

@@ -9,75 +9,56 @@ namespace PluginBigQuery.API.Discover
 {
     public static partial class Discover
     {
-        public static async IAsyncEnumerable<Schema> GetRefreshSchemas(IConnectionFactory connFactory,
+        public static async IAsyncEnumerable<Schema> GetRefreshSchemas(IClientFactory clientFactory,
             RepeatedField<Schema> refreshSchemas, int sampleSize = 5)
         {
-            var conn = connFactory.GetConnection();
-            
             try
             {
-                await conn.OpenAsync();
 
                 foreach (var schema in refreshSchemas)
                 {
                     if (string.IsNullOrWhiteSpace(schema.Query))
                     {
-                        yield return await GetRefreshSchemaForTable(connFactory, schema, sampleSize);
+                        yield return await GetRefreshSchemaForTable(clientFactory, schema, sampleSize);
                         continue;
                     }
+                    var client = clientFactory.GetClient();
 
-                    var cmd = connFactory.GetCommand(schema.Query, conn);
+                    string query = schema.Query;
+                    
+                    var results = await client.ExecuteReaderAsync(query);
 
-                    var reader = await cmd.ExecuteReaderAsync();
-                    var schemaTable = reader.GetSchemaTable();
+                    var refreshProperties = new List<Property>();
 
-                    var properties = new List<Property>();
-                    if (schemaTable != null)
+            
+            
+                    foreach (var row in results)
                     {
-                        var unnamedColIndex = 0;
-
-                        // get each column and create a property for the column
-                        foreach (DataRow row in schemaTable.Rows)
+                        var property = new Property(){};
+                        
+                        foreach (var field in row.Schema.Fields)
                         {
-                            // get the column name
-                            var colName = row["ColumnName"].ToString();
-                            if (string.IsNullOrWhiteSpace(colName))
-                            {
-                                colName = $"UNKNOWN_{unnamedColIndex}";
-                                unnamedColIndex++;
-                            }
-
-                            // create property
-                            var property = new Property
-                            {
-                                Id = Utility.Utility.GetSafeName(colName, '`'),
-                                Name = colName,
-                                Description = "",
-                                Type = GetPropertyType(row),
-                                // TypeAtSource = row["DataType"].ToString(),
-                                IsKey = Boolean.Parse(row["IsKey"].ToString()),
-                                IsNullable = Boolean.Parse(row["AllowDBNull"].ToString()),
-                                IsCreateCounter = false,
-                                IsUpdateCounter = false,
-                                PublisherMetaJson = ""
-                            };
-
-                            // add property to properties
-                            properties.Add(property);
+                            property.Name = field.Name;
+                            property.Id = field.Name;
+                            
+                            property.Type = GetType(field.Type);
+                            property.TypeAtSource = field.Type;
+                            
+                            property.IsKey = false; 
+                            property.IsNullable = true;
                         }
+                        refreshProperties.Add(property);
                     }
-
-                    // add only discovered properties to schema
+                    
                     schema.Properties.Clear();
-                    schema.Properties.AddRange(properties);
+                    schema.Properties.AddRange(refreshProperties);
 
-                    // get sample and count
-                    yield return await AddSampleAndCount(connFactory, schema, sampleSize);
+                    yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                 }
             }
             finally
             {
-                await conn.CloseAsync();
+                //noop
             }
         }
     }

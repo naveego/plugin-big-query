@@ -11,40 +11,27 @@ namespace PluginBigQuery.API.Discover
         public static async Task<Count> GetCountOfRecords(IClientFactory clientFactory, Schema schema)
         {
             var query = schema.Query;
+            
+            var client = clientFactory.GetClient();
+            string db = client.GetDefaultDatabase();
+            
             if (string.IsNullOrWhiteSpace(query))
             {
                 query = $"SELECT * FROM {schema.Id}";
             }
 
-            // var conn = connFactory.GetConnection();
-
-            var client = clientFactory.GetClient();
-            
             try
             {
-                //await conn.OpenAsync();
+                var result = await client.ExecuteReaderAsync($"SELECT COUNT(*) as count FROM ({query}) as q");
 
-                
-                //var cmd = connFactory.GetCommand($"SELECT COUNT(*) as count FROM ({query}) as q", conn);
-                //var reader = await cmd.ExecuteReaderAsync();
-                
-                
-                var result = client.ExecuteReaderAsync($"SELECT COUNT(*) as count FROM ({query}) as q");
+                var count = 0;
 
-                var count = -1;
-
-                foreach (var row in result.Result)
+                foreach (var row in result)
                 {
-                    count = (int)row[0];
+                    count = Convert.ToInt32(row["count"]);
                 }
 
-
-                // while (await reader.ReadAsync())
-                // {
-                //     count = Convert.ToInt32(reader.GetValueById("count"));
-                // }
-                
-                return count == -1
+                return count == 0
                     ? new Count
                     {
                         Kind = Count.Types.Kind.Unavailable,
@@ -54,6 +41,11 @@ namespace PluginBigQuery.API.Discover
                         Kind = Count.Types.Kind.Exact,
                         Value = count
                     };
+            }
+            catch (Exception e)
+            {
+                var noop = e.Message;
+                throw;
             }
             finally
             {
