@@ -23,10 +23,6 @@ namespace PluginBigQueryTest.Plugin
                 ProjectId = "first-test-project-312212",
                 JsonFilePath = @"C:\Users\chris.cowell\RiderProjects\Google Big Query - In House Sample\Queries\first-test-project-312212-3c3ca8a055a8.json"
                 
-                // Hostname = "150.136.152.223",
-                // Database = "classicmodels",
-                // Username = "root",
-                // Password = "dtC5&CFiQ$9j"
             };
         }
 
@@ -213,7 +209,6 @@ namespace PluginBigQueryTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                // ToRefresh = {GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers")}
                 ToRefresh = {GetTestSchema("`testdata`.`table1`", "testdata.table1")}
             };
 
@@ -285,8 +280,6 @@ namespace PluginBigQueryTest.Plugin
             Assert.Equal($"SELECT * FROM `testdata`.`table1`", schema.Query);
             Assert.Equal(1, schema.Sample.Count);
             
-            //Question - problem with properties being added
-            
             Assert.Equal(1, schema.Properties.Count);
 
             var property = schema.Properties[0];
@@ -324,7 +317,6 @@ namespace PluginBigQueryTest.Plugin
             {
                 Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
                 SampleSize = 10,
-                //ToRefresh = {GetTestSchema("test", "test", $"bad syntax")}
                 ToRefresh = {GetTestSchema("testdata.table1", "testdata.table1", $"bad syntax")}
             };
 
@@ -339,10 +331,10 @@ namespace PluginBigQueryTest.Plugin
             {
                 // assert
                 Assert.IsType<RpcException>(e);
+                
                 Regex rgx = new Regex("Job.*contained errors", RegexOptions.Compiled);
                 bool passed = rgx.IsMatch(e.Message);
                 Assert.True(passed);
-                //Assert.Contains("Job* contained errors", e.Message);
             }
 
             // cleanup
@@ -397,7 +389,6 @@ namespace PluginBigQueryTest.Plugin
 
             while (await responseStream.MoveNext())
             {
-                //Has response, but is null record
                 records.Add(responseStream.Current);
             }
 
@@ -406,19 +397,6 @@ namespace PluginBigQueryTest.Plugin
 
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
             Assert.Equal(DateTime.Parse("2003-01-06"), record["col6"]);
-            // Assert.Equal((long) 103, record["`customerNumber`"]);
-            // Assert.Equal("Atelier graphique", record["`customerName`"]);
-            // Assert.Equal("Schmitt", record["`contactLastName`"]);
-            // Assert.Equal("Carine", record["`contactFirstName`"]);
-            // Assert.Equal("40.32.2555", record["`phone`"]);
-            // Assert.Equal("54, rue Royale", record["`addressLine1`"]);
-            // Assert.Equal("", record["`addressLine2`"]);
-            // Assert.Equal("Nantes", record["`city`"]);
-            // Assert.Equal("", record["`state`"]);
-            // Assert.Equal("44000", record["`postalCode`"]);
-            // Assert.Equal("France", record["`country`"]);
-            // Assert.Equal((long) 1370, record["`salesRepEmployeeNumber`"]);
-            // Assert.Equal("21000.00", record["`creditLimit`"]);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -478,17 +456,9 @@ namespace PluginBigQueryTest.Plugin
             // assert
             Assert.Equal(1, records.Count);
 
-            //This is fixed, but is it right?
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
             Assert.Equal(DateTime.Parse("2003-01-06T00:00:00"), record["col6"]);
-            // Assert.Equal((long) 64, record["col1"]);
-            // Assert.Equal(DateTime.Parse("2003-01-06"), record["col2"]);
-            // Assert.Equal(DateTime.Parse("2003-01-13"), record["col3"]);
-            // Assert.Equal(DateTime.Parse("2003-01-10"), record["col4"]);
-            // Assert.Equal("Shipped", record["col5`"]);
-            // Assert.Equal(DateTime.Parse("1/6/2003 12:00:00 AM"), record["col6"]);
-            // Assert.Equal("", record["`comments`"]);
-            // Assert.Equal((long) 363, record["`customerNumber`"]);
+            //Review this with wyatt
 
             // cleanup
             await channel.ShutdownAsync();
@@ -580,14 +550,11 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        //SchemaName = "test",
                         SchemaName = "testdata",
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })
                 },
-                //Version pairs to test
-                //1,2 1,2 2,2 2,3
                 DataVersions = new DataVersions
                 {
                     JobId = "jobUnitTest",
@@ -657,7 +624,6 @@ namespace PluginBigQueryTest.Plugin
                     {
                         Action = Record.Types.Action.Upsert,
                         CorrelationId = "test",
-                        // CorrelationId = "testdata",
                         RecordId = "record1",
                         DataJson = "{\"Id\":1,\"Name\":\"Test Company\"}",
                         Versions =
@@ -676,99 +642,6 @@ namespace PluginBigQueryTest.Plugin
 
             // act
             client.Connect(connectRequest);
-            client.PrepareWrite(prepareWriteRequest);
-
-            using (var call = client.WriteStream())
-            {
-                var responseReaderTask = Task.Run(async () =>
-                {
-                    while (await call.ResponseStream.MoveNext())
-                    {
-                        var ack = call.ResponseStream.Current;
-                        recordAcks.Add(ack);
-                    }
-                });
-
-                foreach (Record record in records)
-                {
-                    await call.RequestStream.WriteAsync(record);
-                }
-
-                await call.RequestStream.CompleteAsync();
-                await responseReaderTask;
-            }
-
-            // assert
-            Assert.Single(recordAcks);
-            Assert.Equal("", recordAcks[0].Error);
-            Assert.Equal("test", recordAcks[0].CorrelationId);
-
-            // cleanup
-            await channel.ShutdownAsync();
-            await server.ShutdownAsync();
-        }
-
-        [Fact]
-        public async Task WriteTest()
-        {
-            // setup
-            Server server = new Server
-            {
-                Services = {Publisher.BindService(new PluginBigQuery.Plugin.Plugin())},
-                Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
-            };
-            server.Start();
-
-            var port = server.Ports.First().BoundPort;
-
-            var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
-            var client = new Publisher.PublisherClient(channel);
-
-            var connectRequest = GetConnectSettings();
-
-            var configureRequest = new ConfigureWriteRequest
-            {
-                Form = new ConfigurationFormRequest
-                {
-                    DataJson = JsonConvert.SerializeObject(new ConfigureWriteFormData
-                    {
-                        StoredProcedure = "`testdata`.`UpsertIntoTestTable`"
-                    })
-                }
-            };
-
-            var records = new List<Record>()
-            {
-                {
-                    new Record
-                    {
-                        Action = Record.Types.Action.Upsert,
-                        CorrelationId = "test",
-                        RecordId = "record1",
-                        DataJson = "{\"id\":\"1\",\"name\":\"Test First\"}",
-                    }
-                }
-            };
-
-            var recordAcks = new List<RecordAck>();
-
-            // act
-            client.Connect(connectRequest);
-
-            var configureResponse = client.ConfigureWrite(configureRequest);
-
-            var prepareWriteRequest = new PrepareWriteRequest()
-            {
-                Schema = configureResponse.Schema,
-                CommitSlaSeconds = 1000,
-                DataVersions = new DataVersions
-                {
-                    JobId = "jobUnitTest",
-                    ShapeId = "shapeUnitTest",
-                    JobDataVersion = 1,
-                    ShapeDataVersion = 1
-                }
-            };
             client.PrepareWrite(prepareWriteRequest);
 
             using (var call = client.WriteStream())
