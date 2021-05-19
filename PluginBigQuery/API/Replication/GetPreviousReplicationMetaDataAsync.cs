@@ -33,7 +33,8 @@ namespace PluginBigQuery.API.Replication
 
                 // ensure replication metadata table
                 await EnsureTableAsync(clientFactory, table);
-
+                
+                // check if metadata exists
                 var bqReader = await client.ExecuteReaderAsync(query);
 
                 foreach (var row in bqReader)
@@ -52,9 +53,7 @@ namespace PluginBigQuery.API.Replication
                         Timestamp = timestamp
                     };
                 }
-                // check if metadata exists
 
-                
                 return replicationMetaData;
             }
             catch (Exception e)

@@ -60,35 +60,9 @@ namespace PluginBigQuery.Plugin
 
             return Task.FromResult(new ConfigureResponse());
         }
-        
+
         /// <summary>
-        /// Executes a query with a Google Big Query client.
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="query"></param>
-        /// <returns>Results of query passed into client as type BigQueryResults</returns>
-        public async Task<BigQueryResults> AsyncQuery(Client client, string query)
-        {
-            Logger.SetLogPrefix("client async query");
-            return await client.ExecuteReaderAsync(query);
-        }
-        
-        /// <summary>
-        /// Executes a query with a Google Big Query client, with parameters.
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="query"></param>
-        /// <param name="parameters"></param>
-        /// <returns>Results of parameterized query passed into client as type BigQueryResults</returns>
-        public async Task<BigQueryResults> AsyncQuery(Client client, string query, IEnumerable<BigQueryParameter> parameters)
-        {
-            Logger.SetLogPrefix("client async query with parameters");
-            return await client.ExecuteReaderAsync(query, parameters);
-        }
-        
-        
-        /// <summary>
-        /// Establishes a connection with MySQL.
+        /// Establishes a connection with Google Big Query.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -370,7 +344,7 @@ namespace PluginBigQuery.Plugin
         }
 
         /// <summary>
-        /// Configures replication writebacks to MySQL
+        /// Configures replication writebacks to Google Big Query
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -425,7 +399,7 @@ namespace PluginBigQuery.Plugin
         }
 
         /// <summary>
-        /// Prepares writeback settings to write to MySQL
+        /// Prepares writeback settings to write to Google Big Query
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -470,7 +444,7 @@ namespace PluginBigQuery.Plugin
         }
 
         /// <summary>
-        /// Writes records to MySQL
+        /// Writes records to Google Big Query
         /// </summary>
         /// <param name="requestStream"></param>
         /// <param name="responseStream"></param>
@@ -517,7 +491,7 @@ namespace PluginBigQuery.Plugin
                     }
                 }
             
-                Logger.Info($"Wrote {inCount} records to MySQL.");
+                Logger.Info($"Wrote {inCount} records to Google Big Query.");
             }
             catch (Exception e)
             {

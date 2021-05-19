@@ -19,10 +19,9 @@ namespace PluginBigQueryTest.Plugin
         {
             return new Settings
             {
-                DefaultDatabase = "testdata",
-                ProjectId = "first-test-project-312212",
-                JsonFilePath = @"C:\Users\chris.cowell\RiderProjects\Google Big Query - In House Sample\Queries\first-test-project-312212-3c3ca8a055a8.json"
-                
+                DefaultDatabase = "",
+                ProjectId = "",
+                JsonFilePath = @""
             };
         }
 
@@ -482,7 +481,6 @@ namespace PluginBigQueryTest.Plugin
             var client = new Publisher.PublisherClient(channel);
 
             var schema = GetTestSchema("`testdata`.`table1`", "testdata.table1");
-            // var schema = GetTestSchema("`classicmodels`.`customers`", "classicmodels.customers");
 
             var connectRequest = GetConnectSettings();
 
@@ -602,7 +600,6 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        // SchemaName = "test",
                         SchemaName = "testdata",
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"

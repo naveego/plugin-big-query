@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using MySqlConnector.Logging;
 using PluginBigQuery.API.Factory;
 using PluginBigQuery.DataContracts;
 

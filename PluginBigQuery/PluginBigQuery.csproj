@@ -7,7 +7,6 @@
 
     <ItemGroup>
       <PackageReference Include="Google.Cloud.BigQuery.V2" Version="2.1.0" />
-      <PackageReference Include="MySqlConnector" Version="0.61.0" />
       <PackageReference Include="Naveego.Sdk" Version="1.2.2" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="Serilog" Version="2.10.0" />
@@ -25,9 +24,6 @@
         <Icon Include="$(MSBuildProjectDirectory)/../icon.png" />
         <License Include="$(MSBuildProjectDirectory)/../LICENSE" />
         <Manifest Include="$(MSBuildProjectDirectory)/../manifest.json" />
-        <Manifest Include="..\manifest - original.json">
-          <Link>plugin-big-query\manifest - original.json</Link>
-        </Manifest>
     </ItemGroup>
 
     <Target Name="ZipWindows" AfterTargets="Publish" Condition="$(Configuration) == 'Release' And Exists('$(MSBuildProjectDirectory)\bin\Release\netcoreapp3.1\win-x64\publish')">

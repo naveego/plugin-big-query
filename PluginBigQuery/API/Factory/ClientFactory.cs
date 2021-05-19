@@ -7,6 +7,7 @@ namespace PluginBigQuery.API.Factory
     public class ClientFactory : IClientFactory
     {
         private Settings _settings;
+        
         public void Initialize(Settings settings)
         {
             _settings = settings;

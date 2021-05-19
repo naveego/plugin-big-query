@@ -16,10 +16,9 @@ namespace PluginBigQuery.API.Replication
             Dictionary<string, object> recordMap)
         {
             var client = clientFactory.GetClient();
-            
+
             try
             {
-                
                 // try to insert
                 var querySb =
                     new StringBuilder(
@@ -44,23 +43,21 @@ namespace PluginBigQuery.API.Replication
 
                         switch (column.DataType.ToLower())
                         {
-                            case ("string"):
-                            case("datetime"):
-                            case("date"):
-                            case("time"):
-                            case("timestamp"):
+                            case "string":
+                            case "datetime":
+                            case "date":
+                            case "time":
+                            case "timestamp":
                                 querySb.Append(rawValue != null
-                                     ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                                    ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
                                     : $"NULL,");
                                 break;
                             default:
                                 querySb.Append(rawValue != null
                                     ? $"{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")},"
                                     : $"NULL,");
-                            break;
-                                
+                                break;
                         }
-
                     }
                     else
                     {

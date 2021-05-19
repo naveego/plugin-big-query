@@ -11,8 +11,9 @@ namespace PluginBigQuery.API.Factory
     {
 
         private readonly BigQueryClient _client;
-        public readonly string _projectId;
-        public readonly string _defaultDatabase;
+        private readonly string _projectId;
+        private readonly string _defaultDatabase;
+        
         public Client(Settings settings)
         {
             //Initialize client

@@ -23,16 +23,16 @@ namespace PluginBigQuery.Helper
                 throw new Exception("The Project ID property must be set");
             }
             
-            if (String.IsNullOrEmpty(JsonFilePath))
-            {
-                throw new Exception("The JsonFilePath property must be set");
-            }
-            
             if (string.IsNullOrEmpty(DefaultDatabase))
             {
                 throw new Exception("The default database property must be set");
             }
             
+            if (String.IsNullOrEmpty(JsonFilePath))
+            {
+                throw new Exception("The JsonFilePath property must be set");
+            }
+
             if (!File.Exists(JsonFilePath))
             {
                 throw new Exception($"No JSON file found at given path: {JsonFilePath}");

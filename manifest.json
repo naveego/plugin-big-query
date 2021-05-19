@@ -4,7 +4,7 @@
   "description": "Publisher which connects to Google Big Query",
   "apiVersion": "2",
   "versionDescription": "Version 2",
-  "version": "1.1.2",
+  "version": "1.0.0",
   "iconFile": "icon.png",
   "executable": "PluginBigQuery",
   "kind": "publisher",
@@ -13,7 +13,7 @@
   "accessGroups": [],
   "canConfigure": true,
   "canProduceMultipleSchemas": true,
-  "canAcceptQueryBasedSchemas": false, 
+  "canAcceptQueryBasedSchemas": true, 
   "canUseOAuth": false,
   "canConfigureWrite": false,
   "canWrite": false,
@@ -35,7 +35,7 @@
       "ui:order": [
         "ProjectId",
         "DefaultDatabase",
-        "PathToJSONFile"
+        "JsonFilePath"
       ]
     },
     "schema": {
@@ -46,7 +46,7 @@
           "title": "Project ID",
           "description": "The project ID of the project"
         },
-        "PathToJSONFile": {
+        "JsonFilePath": {
           "type": "string",
           "title": "Path to JSON Key",
           "description": "Path to Google-generated JSON key. Download at https://console.cloud.google.com/iam-admin/serviceaccounts. Select the service account, navigate to the keys tab, and create a new key with JSON selected."
@@ -58,8 +58,8 @@
         }
       },
       "required": [
-        "Hostname",
-        "PathToJSONFile",
+        "ProjectId",
+        "JsonFilePath",
         "DefaultDatabase"
       ]
     }
