@@ -19,9 +19,17 @@ namespace PluginBigQueryTest.Plugin
         {
             return new Settings
             {
-                DefaultDatabase = "",
-                ProjectId = "",
-                JsonFilePath = @""
+                //Test init
+                
+                DefaultDatabase = "testdata",
+                ProjectId  = "first-test-project-312212",
+                JsonFilePath = @"C:\Users\chris.cowell\RiderProjects\Google Big Query - In House Sample\Queries\first-test-project-312212-3c3ca8a055a8.json"
+                
+                //Prod init
+                
+                // DefaultDatabase = "",
+                // ProjectId = "",
+                // JsonFilePath = @""
             };
         }
 
@@ -439,6 +447,8 @@ namespace PluginBigQueryTest.Plugin
 
             // act
             client.Connect(connectRequest);
+            //Below is getting only one schema?
+            //CC - Delete note here
             var schemasResponse = client.DiscoverSchemas(schemaRequest);
             request.Schema = schemasResponse.Schemas[0];
 
@@ -456,9 +466,13 @@ namespace PluginBigQueryTest.Plugin
             Assert.Equal(1, records.Count);
 
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
+            Assert.Equal("64", record["col1"]);
+            Assert.Equal("101", record["col2"]);
+            Assert.Equal("string", record["col3"]);
+            Assert.Equal("202", record["col4"]);
+            Assert.True(Boolean.Parse(record["col5"].ToString()));
             Assert.Equal(DateTime.Parse("2003-01-06T00:00:00"), record["col6"]);
-            //Review this with wyatt
-
+            
             // cleanup
             await channel.ShutdownAsync();
             await server.ShutdownAsync();

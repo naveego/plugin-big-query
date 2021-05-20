@@ -41,6 +41,9 @@ namespace PluginBigQuery.API.Read
                 foreach (var row in results)
                 {
                     var recordMap = new Dictionary<string, object>();
+                    
+                    //Only one property being seen
+                    //CC - Delete note here
                     foreach (var property in schema.Properties)
                     {
                         try

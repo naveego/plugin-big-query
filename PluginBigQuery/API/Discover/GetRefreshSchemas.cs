@@ -30,14 +30,13 @@ namespace PluginBigQuery.API.Discover
 
                     var refreshProperties = new List<Property>();
 
-            
-            
+                    
                     foreach (var row in results)
                     {
-                        var property = new Property(){};
-                        
                         foreach (var field in row.Schema.Fields)
                         {
+                            var property = new Property(){};
+                            
                             property.Name = field.Name;
                             property.Id = field.Name;
                             
@@ -46,8 +45,9 @@ namespace PluginBigQuery.API.Discover
                             
                             property.IsKey = false; 
                             property.IsNullable = true;
+                            
+                            refreshProperties.Add(property);
                         }
-                        refreshProperties.Add(property);
                     }
                     
                     schema.Properties.Clear();

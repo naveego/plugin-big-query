@@ -45,13 +45,10 @@ ORDER BY t.TABLE_NAME";
             
             foreach (var row in results)
             {
-                //for field in row: do this - switch case is perfect
-                var property = new Property(){};
-                
-                
                 foreach (var field in row.Schema.Fields)
                 {
                     
+                    var property = new Property(){};
                     switch (field.Name)
                     {
                         case "COLUMN_NAME":
@@ -69,8 +66,8 @@ ORDER BY t.TABLE_NAME";
                             property.IsNullable = true;
                             break;
                     }
+                    refreshProperties.Add(property);
                 }
-                refreshProperties.Add(property);
             }
             
             schema.Properties.Clear();
