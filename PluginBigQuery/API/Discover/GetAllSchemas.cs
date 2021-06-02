@@ -71,24 +71,23 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
                         Properties = { },
                         DataFlowDirection = Schema.Types.DataFlowDirection.Read
                     };
-                    
-                    var property = new Property
-                    {
-                        Id = row[ColumnName].ToString(),
-                        Name = row[ColumnName].ToString(),
-                        IsKey = row[ColumnKey].ToString() == "1",
-                        IsNullable = row[IsNullable].ToString() == "YES",
-                        Type = GetType(row[DataType].ToString()),
-                         TypeAtSource = GetTypeAtSource(row[DataType].ToString(), 0)
-                    };
-                    
-                    schema?.Properties.Add(property);
                 }
-                if (schema != null)
+                var property = new Property
                 {
-                    // get sample and count
-                    yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
-                }
+                    Id = row[ColumnName].ToString(),
+                    Name = row[ColumnName].ToString(),
+                    IsKey = row[ColumnKey].ToString() == "1",
+                    IsNullable = row[IsNullable].ToString().ToUpper() == "YES",
+                    Type = GetType(row[DataType].ToString()),
+                    TypeAtSource = GetTypeAtSource(row[DataType].ToString(), 0)
+                };
+                    
+                schema?.Properties.Add(property);
+            }
+            if (schema != null)
+            {
+                // get sample and count
+                yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
             }
         }
 

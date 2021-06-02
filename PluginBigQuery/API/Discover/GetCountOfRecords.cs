@@ -13,7 +13,6 @@ namespace PluginBigQuery.API.Discover
             var query = schema.Query;
             
             var client = clientFactory.GetClient();
-            string db = client.GetDefaultDatabase();
             
             if (string.IsNullOrWhiteSpace(query))
             {

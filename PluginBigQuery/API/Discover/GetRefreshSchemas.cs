@@ -35,23 +35,26 @@ namespace PluginBigQuery.API.Discover
                     {
                         foreach (var field in row.Schema.Fields)
                         {
-                            var property = new Property(){};
-                            
-                            property.Name = field.Name;
-                            property.Id = field.Name;
-                            
-                            property.Type = GetType(field.Type);
-                            property.TypeAtSource = field.Type;
-                            
-                            property.IsKey = false; 
-                            property.IsNullable = true;
-                            
-                            refreshProperties.Add(property);
+                            var property = new Property()
+                            {
+
+                                Name = field.Name,
+                                Id = field.Name,
+
+                                Type = GetType(field.Type),
+                                TypeAtSource = field.Type,
+
+                                IsKey = false,
+                                IsNullable = true
+                            };
+                            refreshProperties?.Add(property);
+                            schema.Properties.Clear();
+                            schema.Properties.AddRange(refreshProperties);
                         }
                     }
                     
-                    schema.Properties.Clear();
-                    schema.Properties.AddRange(refreshProperties);
+                    //schema.Properties.Clear();
+                    //schema.Properties.AddRange(refreshProperties);
 
                     yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                 }

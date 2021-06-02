@@ -19,17 +19,10 @@ namespace PluginBigQueryTest.Plugin
         {
             return new Settings
             {
-                //Test init
-                
+                // populate for tests
                 DefaultDatabase = "testdata",
-                ProjectId  = "first-test-project-312212",
-                JsonFilePath = @"C:\Users\chris.cowell\RiderProjects\Google Big Query - In House Sample\Queries\first-test-project-312212-3c3ca8a055a8.json"
-                
-                //Prod init
-                
-                // DefaultDatabase = "",
-                // ProjectId = "",
-                // JsonFilePath = @""
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"C:\Dev\big-query key\first-test-project-312212-d781347afdc6.json"
             };
         }
 
@@ -171,14 +164,14 @@ namespace PluginBigQueryTest.Plugin
 
             // assert
             Assert.IsType<DiscoverSchemasResponse>(response);
-            Assert.Equal(36, response.Schemas.Count);
+            Assert.Equal(5, response.Schemas.Count);
             
             var schema = response.Schemas[0];
             Assert.Equal($"`testdata`.`NaveegoReplicationMetaData`", schema.Id);
             Assert.Equal("testdata.NaveegoReplicationMetaData", schema.Name);
             Assert.Equal($"", schema.Query);
-            Assert.Equal(6, schema.Sample.Count);
-            Assert.Equal(1, schema.Properties.Count);
+            Assert.Equal(1, schema.Sample.Count);
+            Assert.Equal(5, schema.Properties.Count);
             
             
             var property = schema.Properties[0];
@@ -287,13 +280,14 @@ namespace PluginBigQueryTest.Plugin
             Assert.Equal($"SELECT * FROM `testdata`.`table1`", schema.Query);
             Assert.Equal(1, schema.Sample.Count);
             
-            Assert.Equal(1, schema.Properties.Count);
+            
+            Assert.Equal(6, schema.Properties.Count);
 
             var property = schema.Properties[0];
-            Assert.Equal("col6", property.Id);
-            Assert.Equal("col6", property.Name);
+            Assert.Equal("col1", property.Id);
+            Assert.Equal("col1", property.Name);
             Assert.Equal("", property.Description);
-            Assert.Equal(PropertyType.Date, property.Type);
+            Assert.Equal(PropertyType.String, property.Type);
             Assert.False(property.IsKey);
             Assert.True(property.IsNullable);
 

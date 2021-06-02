@@ -12,12 +12,6 @@ namespace PluginBigQueryTest.Helper
             // setup
             var settings = new Settings
             {
-                // uncomment below for test data set
-                // DefaultDatabase = "testdata",
-                // ProjectId = "first-test-project-312212",
-                // JsonFilePath = @"<PATH_TO_AUNALYTICS_BIG_QUERY_ACCOUNT_JSON_EXPORT>"
-                
-                
                 DefaultDatabase = "",
                 ProjectId = "",
                 JsonFilePath = @""

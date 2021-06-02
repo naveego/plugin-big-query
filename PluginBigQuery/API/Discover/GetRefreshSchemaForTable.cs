@@ -45,10 +45,9 @@ ORDER BY t.TABLE_NAME";
             
             foreach (var row in results)
             {
+                var property = new Property() { };
                 foreach (var field in row.Schema.Fields)
                 {
-                    
-                    var property = new Property(){};
                     switch (field.Name)
                     {
                         case "COLUMN_NAME":
@@ -57,7 +56,7 @@ ORDER BY t.TABLE_NAME";
                             break;
                         case "DATA_TYPE":
                             property.Type = GetType(row[field.Name].ToString());
-                            property.TypeAtSource = row[field.Name].ToString(); //Max length does not exist, so just use dataType
+                            property.TypeAtSource = row[field.Name].ToString(); 
                             break;
                         case "COLUMN_KEY":
                             property.IsKey = false;
@@ -66,12 +65,12 @@ ORDER BY t.TABLE_NAME";
                             property.IsNullable = true;
                             break;
                     }
-                    refreshProperties.Add(property);
                 }
+                refreshProperties?.Add(property);
+                schema.Properties.Clear();
+                schema.Properties.AddRange(refreshProperties);
             }
             
-            schema.Properties.Clear();
-            schema.Properties.AddRange(refreshProperties);
 
             return await AddSampleAndCount(clientFactory, schema, sampleSize);
             
