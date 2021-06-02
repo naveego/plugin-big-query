@@ -42,7 +42,6 @@ WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_SCHEMA != 'sys'";
             }
             catch
             {
-                
             }
 
             return storedProcedures;

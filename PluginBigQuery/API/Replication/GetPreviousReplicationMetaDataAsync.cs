@@ -26,7 +26,6 @@ namespace PluginBigQuery.API.Replication
                 Utility.Utility.GetSafeName(Constants.ReplicationMetaDataJobId),
                 jobId);
             
-
             try
             {
                 ReplicationMetaData replicationMetaData = null;

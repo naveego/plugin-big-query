@@ -229,8 +229,8 @@ namespace PluginBigQueryTest.Plugin
 
             //Properties is null here also
             var property = schema.Properties[0];
-            Assert.Equal("COLUMN_NAME", property.Id);
-            Assert.Equal("COLUMN_NAME", property.Name);
+            Assert.Equal("col1", property.Id);
+            Assert.Equal("col1", property.Name);
             Assert.Equal("", property.Description);
             Assert.Equal(PropertyType.Integer, property.Type);
             Assert.False(property.IsKey);
@@ -439,8 +439,7 @@ namespace PluginBigQueryTest.Plugin
 
             // act
             client.Connect(connectRequest);
-            //Below is getting only one schema?
-            //CC - Delete note here
+
             var schemasResponse = client.DiscoverSchemas(schemaRequest);
             request.Schema = schemasResponse.Schemas[0];
 
@@ -554,9 +553,6 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        
-                        SchemaName = GetSettings().DefaultDatabase,
-                        
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })
@@ -608,7 +604,6 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        SchemaName = GetSettings().DefaultDatabase,
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })

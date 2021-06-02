@@ -14,7 +14,6 @@ namespace PluginBigQuery.API.Discover
         {
             try
             {
-
                 foreach (var schema in refreshSchemas)
                 {
                     if (string.IsNullOrWhiteSpace(schema.Query))
@@ -22,14 +21,14 @@ namespace PluginBigQuery.API.Discover
                         yield return await GetRefreshSchemaForTable(clientFactory, schema, sampleSize);
                         continue;
                     }
+
                     var client = clientFactory.GetClient();
 
                     string query = schema.Query;
-                    
+
                     var results = await client.ExecuteReaderAsync(query);
 
                     var refreshProperties = new List<Property>();
-
                     
                     foreach (var row in results)
                     {
@@ -37,7 +36,6 @@ namespace PluginBigQuery.API.Discover
                         {
                             var property = new Property()
                             {
-
                                 Name = field.Name,
                                 Id = field.Name,
 
@@ -52,9 +50,6 @@ namespace PluginBigQuery.API.Discover
                             schema.Properties.AddRange(refreshProperties);
                         }
                     }
-                    
-                    //schema.Properties.Clear();
-                    //schema.Properties.AddRange(refreshProperties);
 
                     yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                 }

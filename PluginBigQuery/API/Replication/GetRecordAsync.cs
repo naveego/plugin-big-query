@@ -20,7 +20,6 @@ WHERE {2} = '{3}'";
             
             try
             {
-
                 var query = string.Format(GetRecordQuery,
                     Utility.Utility.GetSafeName(table.SchemaName, '`'),
                     Utility.Utility.GetSafeName(table.TableName, '`'),

@@ -7,13 +7,12 @@ namespace PluginBigQuery.API.Discover
 {
     public static partial class Discover
     {
-        //public static async Task<Count> GetCountOfRecords(IConnectionFactory connFactory, Schema schema)
         public static async Task<Count> GetCountOfRecords(IClientFactory clientFactory, Schema schema)
         {
             var query = schema.Query;
-            
+
             var client = clientFactory.GetClient();
-            
+
             if (string.IsNullOrWhiteSpace(query))
             {
                 query = $"SELECT * FROM {schema.Id}";

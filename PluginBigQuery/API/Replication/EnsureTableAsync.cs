@@ -15,8 +15,6 @@ FROM {0}.INFORMATION_SCHEMA.TABLES
 WHERE table_schema = '{1}' 
 AND table_name = '{2}'";
 
-        // private static readonly string EnsureTableQuery = @"SELECT * FROM {0}.{1}";
-
         public static async Task EnsureTableAsync(IClientFactory clientFactory, ReplicationTable table)
         {
             var client = clientFactory.GetClient();
@@ -50,7 +48,6 @@ AND table_name = '{2}'";
                         querySb.Length--;
                         querySb.Append(");");
                         
-
                         var query = querySb.ToString();
                         Logger.Info($"Creating Table: {query}");
                         await client.ExecuteReaderAsync(query);

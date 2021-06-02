@@ -76,7 +76,6 @@ namespace PluginBigQuery.API.Replication
 
                 var previousVersionTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, safeSchemaName, previousReplicationSettings.VersionTableName);
 
-
                 // check if golden table name changed
                 if (previousReplicationSettings.GoldenTableName != replicationSettings.GoldenTableName)
                 {

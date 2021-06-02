@@ -9,11 +9,10 @@ namespace PluginBigQuery.API.Factory
 {
     public class Client : IClient
     {
-
         private readonly BigQueryClient _client;
         private readonly string _projectId;
         private readonly string _defaultDatabase;
-        
+
         public Client(Settings settings)
         {
             //Initialize client
@@ -33,7 +32,6 @@ namespace PluginBigQuery.API.Factory
             return await _client.ExecuteQueryAsync(query, parameters);
         }
 
-        
         public async Task<bool> PingAsync()
         {
             await _client.ExecuteQueryAsync("SELECT 1;", parameters: null);

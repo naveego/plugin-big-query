@@ -26,7 +26,6 @@ AND t.TABLE_SCHEMA = '{2}'
 
 ORDER BY t.TABLE_NAME";
         
-
         public static async Task<Schema> GetRefreshSchemaForTable(IClientFactory clientFactory, Schema schema,
             int sampleSize = 5)
         {
@@ -45,32 +44,21 @@ ORDER BY t.TABLE_NAME";
             
             foreach (var row in results)
             {
-                var property = new Property() { };
-                foreach (var field in row.Schema.Fields)
+                var property = new Property
                 {
-                    switch (field.Name)
-                    {
-                        case "COLUMN_NAME":
-                            property.Name = field.Name;
-                            property.Id = field.Name;
-                            break;
-                        case "DATA_TYPE":
-                            property.Type = GetType(row[field.Name].ToString());
-                            property.TypeAtSource = row[field.Name].ToString(); 
-                            break;
-                        case "COLUMN_KEY":
-                            property.IsKey = false;
-                            break;
-                        case "IS_NULLABLE":
-                            property.IsNullable = true;
-                            break;
-                    }
-                }
-                refreshProperties?.Add(property);
-                schema.Properties.Clear();
-                schema.Properties.AddRange(refreshProperties);
+                    Id = row[ColumnName].ToString(),
+                    Name = row[ColumnName].ToString(),
+                    IsKey = row[ColumnKey].ToString() == "1",
+                    IsNullable = row[IsNullable].ToString().ToUpper() == "YES",
+                    Type = GetType(row[DataType].ToString()),
+                    TypeAtSource = GetTypeAtSource(row[DataType].ToString(), 0)
+                };
+                    
+                refreshProperties.Add(property);
             }
             
+            schema.Properties.Clear();
+            schema.Properties.AddRange(refreshProperties);
 
             return await AddSampleAndCount(clientFactory, schema, sampleSize);
             

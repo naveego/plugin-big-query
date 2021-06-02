@@ -477,14 +477,14 @@ namespace PluginBigQuery.Plugin
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
-                        await Task.Run(async () => await Replication.WriteRecord(_clientFactory, schema, record, config, responseStream), context.CancellationToken);
+                        Task.Run(async () => await Replication.WriteRecord(_clientFactory, schema, record, config, responseStream), context.CancellationToken);
                     }
                     else
                     {
                         // send record to source system
                         // add await for unit testing 
                         // removed to allow multiple to run at the same time
-                        await Task.Run(async () =>
+                        Task.Run(async () =>
                                 await Write.WriteRecordAsync(_clientFactory, schema, record, responseStream),
                             context.CancellationToken);
                     }

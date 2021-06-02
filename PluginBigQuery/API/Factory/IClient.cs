@@ -10,7 +10,7 @@ namespace PluginBigQuery.API.Factory
         Task<BigQueryResults> ExecuteReaderAsync(string query);
         Task<BigQueryResults> ExecuteReaderAsync(string query, IEnumerable<BigQueryParameter> parameters);
 
-        string GetProjectId(); // Make unit-test for this
+        string GetProjectId();
         string GetDefaultDatabase();
 
         Task<bool> PingAsync();

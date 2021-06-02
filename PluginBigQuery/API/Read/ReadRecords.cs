@@ -12,7 +12,6 @@ namespace PluginBigQuery.API.Read
     {
         public static async IAsyncEnumerable<Record> ReadRecords(IClientFactory clientFactory, Schema schema)
         {
-
             var client = clientFactory.GetClient();
             
             try
@@ -35,8 +34,7 @@ namespace PluginBigQuery.API.Read
                     Logger.Error(e, e.Message);
                     yield break;
                 }
-
-                var i = 0;
+                
                 foreach (var row in results)
                 {
                     var recordMap = new Dictionary<string, object>();
@@ -53,7 +51,7 @@ namespace PluginBigQuery.API.Read
                                     recordMap[property.Id] = row[property.Id].ToString();
                                     break;
                                 default:
-                                    recordMap[property.Id] = row[property.Name];
+                                    recordMap[property.Id] = row[property.Id];
                                     break;
                             }
                         }

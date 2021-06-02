@@ -17,8 +17,6 @@ namespace PluginBigQuery.API.Discover
         private const string ColumnKey = "COLUMN_KEY";
         private const string IsNullable = "IS_NULLABLE";
         private const string CharacterMaxLength = "CHARACTER_MAXIMUM_LENGTH";
-        
-        
 
         private const string GetAllTablesAndColumnsQuery = @"
 SELECT t.TABLE_NAME
@@ -34,13 +32,11 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
       INNER JOIN {0}.INFORMATION_SCHEMA.COLUMNS AS c ON c.TABLE_SCHEMA = t.TABLE_SCHEMA AND c.TABLE_NAME = t.TABLE_NAME
 
       ORDER BY t.TABLE_NAME;";
-
-        
         
         public static async IAsyncEnumerable<Schema> GetAllSchemas(IClientFactory clientFactory, int sampleSize = 5)
         {
             var client = clientFactory.GetClient();
-            
+
             string db = client.GetDefaultDatabase();
             string query = String.Format(GetAllTablesAndColumnsQuery, db);
 
@@ -50,7 +46,7 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
             var currentSchemaId = "";
             foreach (var row in result)
             {
-                var schemaId = 
+                var schemaId =
                     $"{Utility.Utility.GetSafeName(row[TableSchema].ToString(), '`')}.{Utility.Utility.GetSafeName(row[TableName].ToString(), '`')}";
                 if (schemaId != currentSchemaId)
                 {
@@ -72,6 +68,7 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
                         DataFlowDirection = Schema.Types.DataFlowDirection.Read
                     };
                 }
+
                 var property = new Property
                 {
                     Id = row[ColumnName].ToString(),
@@ -81,9 +78,10 @@ FROM {0}.INFORMATION_SCHEMA.TABLES AS t
                     Type = GetType(row[DataType].ToString()),
                     TypeAtSource = GetTypeAtSource(row[DataType].ToString(), 0)
                 };
-                    
+
                 schema?.Properties.Add(property);
             }
+
             if (schema != null)
             {
                 // get sample and count
