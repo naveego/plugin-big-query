@@ -23,7 +23,6 @@ namespace PluginBigQuery.Plugin
     {
         private readonly ServerStatus _server;
         private TaskCompletionSource<bool> _tcs;
-        //private IConnectionFactory _connectionFactory;
         private IClientFactory _clientFactory;
 
         public Plugin(IClientFactory clientFactory = null)

@@ -10,7 +10,6 @@ namespace PluginBigQuery.API.Read
 {
     public static partial class Read
     {
-        //public static async IAsyncEnumerable<Record> ReadRecords(IConnectionFactory connFactory, Schema schema)
         public static async IAsyncEnumerable<Record> ReadRecords(IClientFactory clientFactory, Schema schema)
         {
 
@@ -42,8 +41,6 @@ namespace PluginBigQuery.API.Read
                 {
                     var recordMap = new Dictionary<string, object>();
                     
-                    //Only one property being seen
-                    //CC - Delete note here
                     foreach (var property in schema.Properties)
                     {
                         try
@@ -53,7 +50,6 @@ namespace PluginBigQuery.API.Read
                                 case PropertyType.String:
                                 case PropertyType.Text:
                                 case PropertyType.Decimal:
-                                case PropertyType.Bool:
                                     recordMap[property.Id] = row[property.Id].ToString();
                                     break;
                                 default:

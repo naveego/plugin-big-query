@@ -20,9 +20,9 @@ namespace PluginBigQueryTest.Plugin
             return new Settings
             {
                 // populate for tests
-                DefaultDatabase = "testdata",
-                ProjectId = "first-test-project-312212",
-                JsonFilePath = @"C:\Dev\big-query key\first-test-project-312212-d781347afdc6.json"
+                DefaultDatabase = "",
+                ProjectId = "",
+                JsonFilePath = @""
             };
         }
 
@@ -359,15 +359,12 @@ namespace PluginBigQueryTest.Plugin
 
             var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
             var client = new Publisher.PublisherClient(channel);
-
-            var schema = GetTestSchema("`testdata`.`table1`", "testdata.table1", "SELECT * FROM `testdata`.`table1`");
-
+            
             var connectRequest = GetConnectSettings();
 
             var schemaRequest = new DiscoverSchemasRequest
             {
-                Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
-                ToRefresh = {schema}
+                Mode = DiscoverSchemasRequest.Types.Mode.All,
             };
 
             var request = new ReadRequest()
@@ -382,7 +379,7 @@ namespace PluginBigQueryTest.Plugin
             // act
             client.Connect(connectRequest);
             var schemasResponse = client.DiscoverSchemas(schemaRequest);
-            request.Schema = schemasResponse.Schemas[0];
+            request.Schema = schemasResponse.Schemas[2];
 
             var response = client.ReadStream(request);
             var responseStream = response.ResponseStream;
