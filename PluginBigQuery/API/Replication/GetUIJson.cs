@@ -11,7 +11,6 @@ namespace PluginBigQuery.API.Replication
             {
                 {"ui:order", new []
                 {
-                    "SchemaName",
                     "GoldenTableName",
                     "VersionTableName"
                 }}

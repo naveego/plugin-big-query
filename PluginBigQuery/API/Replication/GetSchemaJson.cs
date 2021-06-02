@@ -12,12 +12,6 @@ namespace PluginBigQuery.API.Replication
                 {"type", "object"},
                 {"properties", new Dictionary<string, object>
                 {
-                    {"SchemaName", new Dictionary<string, string>
-                    {
-                        {"type", "string"},
-                        {"title", "Schema Name"},
-                        {"description", "Name of schema to put golden and version tables into in Google Big Query"},
-                    }},
                     {"GoldenTableName", new Dictionary<string, string>
                     {
                         {"type", "string"},
@@ -33,7 +27,6 @@ namespace PluginBigQuery.API.Replication
                 }},
                 {"required", new []
                 {
-                    "SchemaName",
                     "GoldenTableName",
                     "VersionTableName"
                 }}

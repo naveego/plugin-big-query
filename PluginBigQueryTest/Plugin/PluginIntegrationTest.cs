@@ -342,8 +342,7 @@ namespace PluginBigQueryTest.Plugin
             await channel.ShutdownAsync();
             await server.ShutdownAsync();
         }
-
-
+        
         [Fact]
         public async Task ReadStreamTableSchemaTest()
         {
@@ -359,12 +358,15 @@ namespace PluginBigQueryTest.Plugin
 
             var channel = new Channel($"localhost:{port}", ChannelCredentials.Insecure);
             var client = new Publisher.PublisherClient(channel);
-            
+
+            var schema = GetTestSchema("`testdata`.`table1`", "testdata.table1", "SELECT * FROM `testdata`.`table1`");
+
             var connectRequest = GetConnectSettings();
 
             var schemaRequest = new DiscoverSchemasRequest
             {
-                Mode = DiscoverSchemasRequest.Types.Mode.All,
+                Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
+                ToRefresh = {schema}
             };
 
             var request = new ReadRequest()
@@ -379,7 +381,7 @@ namespace PluginBigQueryTest.Plugin
             // act
             client.Connect(connectRequest);
             var schemasResponse = client.DiscoverSchemas(schemaRequest);
-            request.Schema = schemasResponse.Schemas[2];
+            request.Schema = schemasResponse.Schemas[0];
 
             var response = client.ReadStream(request);
             var responseStream = response.ResponseStream;
@@ -400,7 +402,6 @@ namespace PluginBigQueryTest.Plugin
             await channel.ShutdownAsync();
             await server.ShutdownAsync();
         }
-
         [Fact]
         public async Task ReadStreamQuerySchemaTest()
         {
@@ -553,7 +554,9 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        SchemaName = "testdata",
+                        
+                        SchemaName = GetSettings().DefaultDatabase,
+                        
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })
@@ -605,7 +608,7 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        SchemaName = "testdata",
+                        SchemaName = GetSettings().DefaultDatabase,
                         GoldenTableName = "gr_test",
                         VersionTableName = "vr_test"
                     })

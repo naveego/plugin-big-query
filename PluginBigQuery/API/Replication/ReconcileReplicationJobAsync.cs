@@ -11,7 +11,6 @@ namespace PluginBigQuery.API.Replication
 {
     public static partial class Replication
     {
-        private const string SchemaNameChange = "Schema name changed";
         private const string GoldenNameChange = "Golden record name changed";
         private const string VersionNameChange = "Version name changed";
         private const string JobDataVersionChange = "Job data version changed";
@@ -22,7 +21,7 @@ namespace PluginBigQuery.API.Replication
             // get request settings 
             var replicationSettings =
                 JsonConvert.DeserializeObject<ConfigureReplicationFormData>(request.Replication.SettingsJson);
-            var safeSchemaName = replicationSettings.SchemaName;
+            var safeSchemaName = clientFactory.GetClient().GetDefaultDatabase();
             var safeGoldenTableName =
                 replicationSettings.GoldenTableName;
             var safeVersionTableName =
@@ -73,16 +72,10 @@ namespace PluginBigQuery.API.Replication
                     JsonConvert.DeserializeObject<ConfigureReplicationFormData>(previousMetaData.Request.Replication
                         .SettingsJson);
                 
-                var previousGoldenTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, previousReplicationSettings.SchemaName, previousReplicationSettings.GoldenTableName);
+                var previousGoldenTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, safeSchemaName, previousReplicationSettings.GoldenTableName);
 
-                var previousVersionTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, previousReplicationSettings.SchemaName, previousReplicationSettings.VersionTableName);
+                var previousVersionTable = ConvertSchemaToReplicationTable(previousMetaData.Request.Schema, safeSchemaName, previousReplicationSettings.VersionTableName);
 
-                // check if schema changed
-                if (previousReplicationSettings.SchemaName != replicationSettings.SchemaName)
-                {
-                    dropGoldenReason = SchemaNameChange;
-                    dropVersionReason = SchemaNameChange;
-                }
 
                 // check if golden table name changed
                 if (previousReplicationSettings.GoldenTableName != replicationSettings.GoldenTableName)

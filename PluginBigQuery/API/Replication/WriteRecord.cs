@@ -34,6 +34,8 @@ namespace PluginBigQuery.API.Replication
             // debug
             Logger.Debug($"Starting timer for {record.RecordId}");
             var timer = Stopwatch.StartNew();
+
+            var defaultDatabase = clientFactory.GetClient().GetDefaultDatabase();
             
             try
             {
@@ -44,7 +46,7 @@ namespace PluginBigQuery.API.Replication
                 await ReplicationSemaphoreSlim.WaitAsync();
             
                 // setup
-                var safeSchemaName = config.SchemaName;
+                var safeSchemaName = defaultDatabase;
                 var safeGoldenTableName = config.GoldenTableName;
                 var safeVersionTableName = config.VersionTableName;
             
