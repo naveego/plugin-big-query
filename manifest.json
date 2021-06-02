@@ -5,7 +5,7 @@
   "apiVersion": "2",
   "versionDescription": "Version 2",
   "version": "1.0.0",
-  "iconFile": "icon.svg",
+  "iconFile": "icon.png",
   "executable": "PluginBigQuery",
   "kind": "publisher",
   "os": "$GOOS",
