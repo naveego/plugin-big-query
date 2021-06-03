@@ -42,7 +42,7 @@ AND table_name = '{2}'";
                         foreach (var column in table.Columns)
                         {
                             querySb.Append(
-                                $"{Utility.Utility.GetSafeName(column.ColumnName)} {column.DataType},");
+                                $"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)} {column.DataType},");
                             
                         }
                         querySb.Length--;
