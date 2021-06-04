@@ -25,7 +25,7 @@ namespace PluginBigQuery.API.Replication
                         $"INSERT INTO {Utility.Utility.GetSafeName(table.SchemaName, '`')}.{Utility.Utility.GetSafeName(table.TableName, '`')}(");
                 foreach (var column in table.Columns)
                 {
-                    querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')},");
+                    querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)},");
                 }
 
                 querySb.Length--;
