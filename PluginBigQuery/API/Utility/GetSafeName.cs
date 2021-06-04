@@ -2,11 +2,16 @@ namespace PluginBigQuery.API.Utility
 {
     public static partial class Utility
     {
-        public static string GetSafeName(string unsafeName, char escapeChar = '`', bool replaceInvalidChars = false)
+        public static string GetSafeName(string unsafeName, char escapeChar = '`', bool isForColumn = false)
         {
-            if (replaceInvalidChars)
+            if (isForColumn)
             {
-                return $"{escapeChar}{unsafeName}{escapeChar}".Replace(" ", "_");
+                escapeChar = '"';
+                
+                return $"{escapeChar}" +
+                       $"{unsafeName}"
+                           .Replace(" ", "_")+
+                       $"{escapeChar}";
             }
             return $"{escapeChar}{unsafeName}{escapeChar}";
         }
