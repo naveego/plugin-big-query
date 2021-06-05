@@ -164,13 +164,13 @@ namespace PluginBigQueryTest.Plugin
 
             // assert
             Assert.IsType<DiscoverSchemasResponse>(response);
-            Assert.Equal(5, response.Schemas.Count);
+            Assert.Equal(7, response.Schemas.Count);
             
             var schema = response.Schemas[0];
             Assert.Equal($"`testdata`.`NaveegoReplicationMetaData`", schema.Id);
             Assert.Equal("testdata.NaveegoReplicationMetaData", schema.Name);
             Assert.Equal($"", schema.Query);
-            Assert.Equal(1, schema.Sample.Count);
+            Assert.Equal(2, schema.Sample.Count);
             Assert.Equal(5, schema.Properties.Count);
             
             
@@ -459,7 +459,7 @@ namespace PluginBigQueryTest.Plugin
             var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
             Assert.Equal("64", record["col1"]);
             Assert.Equal("101", record["col2"]);
-            Assert.Equal("string", record["col3"]);
+            Assert.Equal("Kevin O'Leary", record["col3"]);
             Assert.Equal("202", record["col4"]);
             Assert.True(Boolean.Parse(record["col5"].ToString()));
             Assert.Equal(DateTime.Parse("2003-01-06T00:00:00"), record["col6"]);
@@ -625,13 +625,13 @@ namespace PluginBigQueryTest.Plugin
                         Action = Record.Types.Action.Upsert,
                         CorrelationId = "test",
                         RecordId = "record1",
-                        DataJson = "{\"Id\":1,\"Name\":\"Test Company\"}",
+                        DataJson = "{\"Id\":1,\"Name\":\"The Kevin O'Leary Company\"}",
                         Versions =
                         {
                             new RecordVersion
                             {
                                 RecordId = "version1",
-                                DataJson = "{\"Id\":1,\"Name\":\"Test Company\"}",
+                                DataJson = "{\"Id\":1,\"Name\":\"The Kevin O'Leary Company\"}",
                             }
                         }
                     }

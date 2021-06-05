@@ -49,12 +49,12 @@ namespace PluginBigQuery.API.Replication
                             case "time":
                             case "timestamp":
                                 querySb.Append(rawValue != null
-                                    ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',"
+                                    ? $"'{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "\\'")}',"
                                     : $"NULL,");
                                 break;
                             default:
                                 querySb.Append(rawValue != null
-                                    ? $"{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")},"
+                                    ? $"{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "\\'")},"
                                     : $"NULL,");
                                 break;
                         }
@@ -97,16 +97,16 @@ namespace PluginBigQuery.API.Replication
                                 if (rawValue != null)
                                 {
                                     querySb.Append(
-                                        $"{Utility.Utility.GetSafeName(column.ColumnName, '`')}='{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "''")}',");
+                                        $"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)}='{Utility.Utility.GetSafeString(rawValue.ToString(), "'", "\\'")}',");
                                 }
                                 else
                                 {
-                                    querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}=NULL,");
+                                    querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)}=NULL,");
                                 }
                             }
                             else
                             {
-                                querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`')}=NULL,");
+                                querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)}=NULL,");
                             }
                         }
                     }

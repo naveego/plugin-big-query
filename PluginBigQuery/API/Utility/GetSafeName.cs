@@ -9,7 +9,7 @@ namespace PluginBigQuery.API.Utility
                 return $"{escapeChar}" +
                        $"{unsafeName}"
                            .Replace(" ", "_")
-                           .Replace("'", "''") +
+                           .Replace("'", "\\'") +
                        $"{escapeChar}";
             }
             return $"{escapeChar}{unsafeName}{escapeChar}";
