@@ -20,9 +20,9 @@ namespace PluginBigQueryTest.Plugin
             return new Settings
             {
                 // populate for tests
-                DefaultDatabase = "",
-                ProjectId = "",
-                JsonFilePath = @""
+                DefaultDatabase = "testdata",
+                ProjectId = "first-test-project-312212",
+                JsonFilePath = @"C:\Dev\first-test-project-312212-c3ef59e2491c.json"
             };
         }
 
@@ -164,7 +164,7 @@ namespace PluginBigQueryTest.Plugin
 
             // assert
             Assert.IsType<DiscoverSchemasResponse>(response);
-            Assert.Equal(7, response.Schemas.Count);
+            Assert.Equal(8, response.Schemas.Count);
             
             var schema = response.Schemas[0];
             Assert.Equal($"`testdata`.`NaveegoReplicationMetaData`", schema.Id);
@@ -224,7 +224,7 @@ namespace PluginBigQueryTest.Plugin
             Assert.Equal($"`testdata`.`table1`", schema.Id);
             Assert.Equal("testdata.table1", schema.Name);
             Assert.Equal($"", schema.Query);
-            Assert.Equal(1, schema.Sample.Count);
+            Assert.Equal(10, schema.Sample.Count);
             Assert.Equal(6, schema.Properties.Count);
 
             //Properties is null here also
@@ -278,7 +278,7 @@ namespace PluginBigQueryTest.Plugin
             Assert.Equal($"`testdata`.`table1`", schema.Id);
             Assert.Equal("testdata.table1", schema.Name);
             Assert.Equal($"SELECT * FROM `testdata`.`table1`", schema.Query);
-            Assert.Equal(1, schema.Sample.Count);
+            Assert.Equal(10, schema.Sample.Count);
             
             
             Assert.Equal(6, schema.Properties.Count);
@@ -393,9 +393,9 @@ namespace PluginBigQueryTest.Plugin
             }
 
             // assert
-            Assert.Equal(1, records.Count);
+            Assert.Equal(10, records.Count);
 
-            var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
+            var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[2].DataJson);
             Assert.Equal(DateTime.Parse("2003-01-06"), record["col6"]);
 
             // cleanup
@@ -454,15 +454,53 @@ namespace PluginBigQueryTest.Plugin
             
             
             // assert
-            Assert.Equal(1, records.Count);
+            Assert.Equal(10, records.Count);
 
-            var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[0].DataJson);
+            var record = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[2].DataJson);
             Assert.Equal("64", record["col1"]);
             Assert.Equal("101", record["col2"]);
             Assert.Equal("Kevin O'Leary", record["col3"]);
             Assert.Equal("202", record["col4"]);
             Assert.True(Boolean.Parse(record["col5"].ToString()));
             Assert.Equal(DateTime.Parse("2003-01-06T00:00:00"), record["col6"]);
+            
+            
+            // var record2 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[1].DataJson);
+            // Assert.Equal(null, record2["col1"]);
+            // Assert.Equal("-4.8", record2["col2"]);
+            // Assert.Equal("back\\this", record2["col3"]);
+            // Assert.Equal(null, record2["col4"]);
+            // Assert.False(Boolean.Parse(record2["col5"].ToString()));
+            // Assert.Equal(DateTime.Parse("1001-01-01T00:00:00"), record2["col6"]);
+            //
+            // var record3 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[2].DataJson);
+            // Assert.Equal(null, record3["col1"]);
+            // Assert.Equal("-4.8", record3["col2"]);
+            // Assert.Equal("apostrophe'''THAT'", record3["col3"]);
+            // Assert.Equal(null, record3["col4"]);
+            // Assert.False(Boolean.Parse(record3["col5"].ToString()));
+            // Assert.Equal(DateTime.Parse("1001-01-01T00:00:00"), record3["col6"]);
+            //
+            // var record4 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[4].DataJson);
+            // Assert.Equal("3", record4["col1"]);
+            // Assert.Equal("-4.8", record4["col2"]);
+            // Assert.Equal("tricky\\\''this", record4["col3"]);
+            // Assert.Equal(null, record4["col4"]);
+            // Assert.False(Boolean.Parse(record4["col5"].ToString()));
+            // Assert.Equal(DateTime.Parse("0001-01-01T00:00:00"), record4["col6"]);
+            //
+            // var record5 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[3].DataJson);
+            // Assert.Equal("1", record5["col1"]);
+            // Assert.Equal("2.2", record5["col2"]);
+            // Assert.Equal("", record5["col3"]);
+            // Assert.Equal(null, record5["col4"]);
+            // Assert.False(Boolean.Parse(record5["col5"].ToString()));
+            // Assert.Equal(DateTime.Parse("1970-01-01T00:00:00"), record5["col6"]);
+            
+            
+            var record6 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[5].DataJson);
+            var record7 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[6].DataJson);
+            var record8 = JsonConvert.DeserializeObject<Dictionary<string, object>>(records[7].DataJson);
             
             // cleanup
             await channel.ShutdownAsync();
@@ -520,7 +558,7 @@ namespace PluginBigQueryTest.Plugin
             }
 
             // assert
-            Assert.Equal(1, records.Count);
+            Assert.Equal(10, records.Count);
 
             // cleanup
             await channel.ShutdownAsync();

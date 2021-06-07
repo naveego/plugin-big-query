@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using Google.Apis.Bigquery.v2.Data;
 using Google.Protobuf.Collections;
 using Naveego.Sdk.Plugins;
 using PluginBigQuery.API.Factory;
@@ -29,10 +30,11 @@ namespace PluginBigQuery.API.Discover
                     var results = await client.ExecuteReaderAsync(query);
 
                     var refreshProperties = new List<Property>();
-                    
-                    foreach (var row in results)
-                    {
-                        foreach (var field in row.Schema.Fields)
+
+                    var row = results.Schema;
+                    // foreach (var row in results)
+                    // {
+                        foreach (var field in row.Fields)
                         {
                             var property = new Property()
                             {
@@ -49,7 +51,7 @@ namespace PluginBigQuery.API.Discover
                             schema.Properties.Clear();
                             schema.Properties.AddRange(refreshProperties);
                         }
-                    }
+                    //}
 
                     yield return await AddSampleAndCount(clientFactory, schema, sampleSize);
                 }
