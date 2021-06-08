@@ -16,8 +16,8 @@ namespace PluginBigQuery.API.Replication
             try
             {
                 string query = string.Format(DropTableQuery,
-                    Utility.Utility.GetSafeName(table.SchemaName, '`'),
-                    Utility.Utility.GetSafeName(table.TableName, '`')
+                    Utility.Utility.GetSafeName(table.SchemaName, '`', true),
+                    Utility.Utility.GetSafeName(table.TableName, '`', true)
                 );
                 client.ExecuteReaderAsync(query);
             }

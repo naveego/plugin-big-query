@@ -37,7 +37,7 @@ AND table_name = '{2}'";
                     {
                         // create table
                         var querySb = new StringBuilder($@"CREATE TABLE IF NOT EXISTS 
-{Utility.Utility.GetSafeName(table.SchemaName, '`')}.{Utility.Utility.GetSafeName(table.TableName, '`')}(");
+{Utility.Utility.GetSafeName(table.SchemaName, '`', true)}.{Utility.Utility.GetSafeName(table.TableName, '`', true)}(");
                         
                         foreach (var column in table.Columns)
                         {

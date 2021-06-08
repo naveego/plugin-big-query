@@ -20,9 +20,9 @@ WHERE {2} = '{3}'
             try
             {
                 var query = string.Format(RecordExistsQuery,
-                    Utility.Utility.GetSafeName(table.SchemaName, '`'),
-                    Utility.Utility.GetSafeName(table.TableName, '`'),
-                    Utility.Utility.GetSafeName(table.Columns.Find(c => c.PrimaryKey == true).ColumnName, '`'),
+                    Utility.Utility.GetSafeName(table.SchemaName, '`', true),
+                    Utility.Utility.GetSafeName(table.TableName, '`', true),
+                    Utility.Utility.GetSafeName(table.Columns.Find(c => c.PrimaryKey == true).ColumnName, '`', true),
                     primaryKeyValue
                 );
 

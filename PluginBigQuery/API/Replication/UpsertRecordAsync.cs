@@ -22,7 +22,7 @@ namespace PluginBigQuery.API.Replication
                 // try to insert
                 var querySb =
                     new StringBuilder(
-                        $"INSERT INTO {Utility.Utility.GetSafeName(table.SchemaName, '`')}.{Utility.Utility.GetSafeName(table.TableName, '`')}(");
+                        $"INSERT INTO {Utility.Utility.GetSafeName(table.SchemaName, '`', true)}.{Utility.Utility.GetSafeName(table.TableName, '`', true)}(");
                 foreach (var column in table.Columns)
                 {
                     querySb.Append($"{Utility.Utility.GetSafeName(column.ColumnName, '`', true)},");
