@@ -20,9 +20,9 @@ namespace PluginBigQueryTest.Plugin
             return new Settings
             {
                 // populate for tests
-                DefaultDatabase = "testdata",
-                ProjectId = "first-test-project-312212",
-                JsonFilePath = @"C:\Dev\first-test-project-312212-c3ef59e2491c.json"
+                DefaultDatabase = "",
+                ProjectId = "",
+                JsonFilePath = @""
             };
         }
 
@@ -591,8 +591,8 @@ namespace PluginBigQueryTest.Plugin
                 {
                     SettingsJson = JsonConvert.SerializeObject(new ConfigureReplicationFormData
                     {
-                        GoldenTableName = "gr_test",
-                        VersionTableName = "vr_test"
+                        GoldenTableName = @"gr_test",
+                        VersionTableName = @"vr_test"
                     })
                 },
                 DataVersions = new DataVersions

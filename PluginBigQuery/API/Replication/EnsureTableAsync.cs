@@ -21,12 +21,12 @@ AND table_name = '{2}'";
             var db = client.GetDefaultDatabase();
             try
             {
-                Logger.Info($"Creating Schema... {table.SchemaName}");
-                string bq_query = string.Format(EnsureTableQuery, db, table.SchemaName, table.TableName);
+                Logger.Info($"Creating Table... {table.SchemaName}.{table.TableName}");
+                string bq_query = string.Format(EnsureTableQuery, db, 
+                    Utility.Utility.GetSafeString(table.SchemaName, "\'", "\\\'"), 
+                    Utility.Utility.GetSafeString(table.TableName, "\'", "\\\'"));
 
                 await client.ExecuteReaderAsync(bq_query);
-                Logger.Info($"Creating Table: {string.Format(EnsureTableQuery, db, table.SchemaName, table.TableName)}");
-
                 var results = await client.ExecuteReaderAsync(bq_query);
 
                 foreach (var row in results)
