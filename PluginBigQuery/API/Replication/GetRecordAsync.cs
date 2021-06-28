@@ -49,7 +49,6 @@ WHERE {2} = '{3}'";
                             recordMap[field.Name] = null;
                         }
                     }
-                        
                 }
 
                 return recordMap;
